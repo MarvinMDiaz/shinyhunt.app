@@ -403,12 +403,13 @@ export function TrackerApp() {
     } else {
       if (isDev) {
         console.log('[TrackerApp] ❌ POPUP SKIPPED (from context) - User does not qualify:', {
-        hasSignupNumber: signupNumber != null,
-        signupNumber,
-        founderBadge,
-        founderPopupShown,
-        reason: founderBadge !== true ? 'founder_badge !== true' : founderPopupShown !== false ? 'founder_popup_shown !== false (already seen)' : 'unknown',
-      })
+          hasSignupNumber: signupNumber != null,
+          signupNumber,
+          founderBadge,
+          founderPopupShown,
+          reason: founderBadge !== true ? 'founder_badge !== true' : founderPopupShown !== false ? 'founder_popup_shown !== false (already seen)' : 'unknown',
+        })
+      }
       // Mark as checked even if not showing popup
       popupCheckedRef.current = true
     }
@@ -1312,10 +1313,6 @@ export function TrackerApp() {
         </>
       )}
     </div>
-    </>
-  )
-}
-/div>
     </>
   )
 }

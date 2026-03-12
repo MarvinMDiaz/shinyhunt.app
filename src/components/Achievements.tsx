@@ -55,7 +55,6 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Different layout for PokéVerse badge */}
           {isPokeverseBadge ? (
-            /* PokéVerse Badge - Simple centered orb display */
             <div className="w-full flex flex-col items-center">
               {!imageError ? (
                 <img
@@ -86,7 +85,6 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
               )}
             </div>
           ) : (
-            /* Other Badges - Static Stage with Floating Badge */
             <div className="relative w-full overflow-hidden" style={{ height: '320px' }}>
               {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
               <div className="absolute inset-0 flex items-end justify-center pb-0">
@@ -367,15 +365,16 @@ export function Achievements() {
   // CRITICAL FIX: Check finalDisplayBadges.length instead of userBadges.length
   // This ensures founder badge appears even if badges array is empty but founder_badge=true
   if (finalDisplayBadges.length === 0) {
-    console.log('[Achievements] ⚠️ No achievements to display (finalDisplayBadges is empty)', {
-      userBadges,
-      userBadgesLength: userBadges.length,
-      founderBadge,
-      founderBadgeRaw,
-      displayBadges,
-      displayBadgesLength: displayBadges.length,
-      finalDisplayBadges,
-      finalDisplayBadgesLength: finalDisplayBadges.length,
+    if (isDev) {
+      console.log('[Achievements] ⚠️ No achievements to display (finalDisplayBadges is empty)', {
+        userBadges,
+        userBadgesLength: userBadges.length,
+        founderBadge,
+        founderBadgeRaw,
+        displayBadges,
+        displayBadgesLength: displayBadges.length,
+        finalDisplayBadges,
+        finalDisplayBadgesLength: finalDisplayBadges.length,
       })
     }
     return (
@@ -400,7 +399,7 @@ export function Achievements() {
     .filter((badgeId): badgeId is BadgeId => {
       // Type guard to ensure badgeId is a valid BadgeId
       const isValid = validBadgeIds.includes(badgeId as BadgeId)
-      if (!isValid) {
+      if (!isValid && isDev) {
         console.log(`[Achievements] ⚠️ Skipping invalid badge ID: ${badgeId}`)
       }
       return isValid
