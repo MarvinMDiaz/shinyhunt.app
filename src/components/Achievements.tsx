@@ -70,7 +70,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
       <CardHeader className="pb-3 pt-3">
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Static Stage with Floating Badge */}
-          <div className="relative w-full overflow-hidden" style={{ height: isPokeverseBadge ? '320px' : '320px' }}>
+          <div className="relative w-full overflow-hidden" style={{ height: isPokeverseBadge ? '600px' : '320px' }}>
             {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
             <div className="absolute inset-0 flex items-end justify-center pb-0 z-10">
               <img
@@ -117,7 +117,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             </div>
             
             {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '100px' : '80px' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '120px' : '80px' }}>
               {!imageError ? (
                 <div className="relative">
                   <img
