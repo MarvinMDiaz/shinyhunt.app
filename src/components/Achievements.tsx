@@ -99,7 +99,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             </div>
             
             {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '110px' : '80px' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '50px' : '80px' }}>
               {!imageError ? (
                 <div className="relative">
                   <img
