@@ -132,8 +132,17 @@ export function ProgressPanelV3({
   }
 
   // Filter active hunts (exclude completed/archived)
-  const availableHunts = activeHunts.filter((h) => !h.archived && !h.completed)
+  const availableHunts = (activeHunts || []).filter((h) => !h.archived && !h.completed)
   const showHuntSwitcher = availableHunts.length > 1 && onSelectHunt
+  
+  // Debug logging
+  console.log('[ProgressPanelV3] Hunt Switcher Debug:', {
+    activeHuntsCount: activeHunts?.length || 0,
+    availableHuntsCount: availableHunts.length,
+    hasOnSelectHunt: !!onSelectHunt,
+    showHuntSwitcher,
+    currentHuntId,
+  })
   
   // Track if user is typing in an input field or setting a hotkey
   const isTypingRef = useRef(false)
@@ -342,25 +351,28 @@ export function ProgressPanelV3({
             </div>
             {/* Mobile Hunt Switcher */}
             {showHuntSwitcher && (
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <Label className="text-sm font-medium">Current Hunt</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-between h-11 min-h-[44px] text-sm px-3"
+                      className="w-full justify-between h-11 min-h-[44px] text-sm px-3 bg-background border-border"
                     >
-                      <span className="truncate">
+                      <span className="truncate text-left">
                         {getHuntDisplayName(hunt)}
                       </span>
                       <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[calc(100vw-3rem)] max-w-[400px]">
+                  <DropdownMenuContent 
+                    className="w-[calc(100vw-3rem)] max-w-[400px] z-50"
+                    align="start"
+                  >
                     {availableHunts.map((huntItem) => (
                       <DropdownMenuItem
                         key={huntItem.id}
-                        className="cursor-pointer min-h-[44px]"
+                        className="cursor-pointer min-h-[44px] py-2"
                         onClick={() => {
                           if (onSelectHunt && huntItem.id !== currentHuntId) {
                             onSelectHunt(huntItem.id)
