@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from './AuthContext'
 import { getUserProfile } from '@/lib/supabase/auth'
 
+const isDev = import.meta.env.DEV
+
 const getAvatarCacheKey = (userId?: string | null) => {
   return userId ? `shinyhunt_avatar_url_${userId}` : 'shinyhunt_avatar_url'
 }
@@ -178,7 +180,9 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       loadProfile(user.id)
     } else {
       // User is not authenticated - clear profile and all cached data
-      console.log('[UserProfileContext] User not authenticated, clearing profile and cache')
+      if (isDev) {
+        console.log('[UserProfileContext] User not authenticated, clearing profile and cache')
+      }
       setProfile(null)
       setLoadingProfile(false)
       

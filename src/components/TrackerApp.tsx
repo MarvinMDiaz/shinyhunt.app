@@ -40,8 +40,12 @@ import { useAuth } from '@/context/AuthContext'
 import { First151CelebrationPopup } from '@/components/First151CelebrationPopup'
 import { SEO } from '@/components/SEO'
 
+const isDev = import.meta.env.DEV
+
 export function TrackerApp() {
-  console.log('TrackerApp rendering')
+  if (isDev) {
+    console.log('TrackerApp rendering')
+  }
   // Initialize with empty state - will load from Supabase when authenticated
   const [state, setState] = useState<AppState>({
     hunts: [],
@@ -70,7 +74,9 @@ export function TrackerApp() {
     if (!isAuthenticated || !currentUserId) {
       if (previousUserId !== null) {
         // User was logged in before, now logged out - clear everything
-        console.log('[TrackerApp] User logged out, clearing state')
+        if (isDev) {
+          console.log('[TrackerApp] User logged out, clearing state')
+        }
         setState({
           hunts: [],
           currentHuntId: null,
@@ -87,15 +93,19 @@ export function TrackerApp() {
     const userChanged = previousUserId !== currentUserId
 
     if (userChanged) {
-      console.log('[TrackerApp] User authenticated or changed:', {
-        previousUserId,
-        currentUserId,
-        isNewUser: previousUserId === null,
-      })
+      if (isDev) {
+        console.log('[TrackerApp] User authenticated or changed:', {
+          previousUserId,
+          currentUserId,
+          isNewUser: previousUserId === null,
+        })
+      }
 
       // Clear old user's data immediately
       if (previousUserId !== null) {
-        console.log('[TrackerApp] User changed, clearing old user data')
+        if (isDev) {
+          console.log('[TrackerApp] User changed, clearing old user data')
+        }
         setState({
           hunts: [],
           currentHuntId: null,
@@ -112,14 +122,18 @@ export function TrackerApp() {
       
       async function loadUserData() {
         try {
-          console.log('[TrackerApp] Loading data for user:', currentUserId)
+          if (isDev) {
+            console.log('[TrackerApp] Loading data for user:', currentUserId)
+          }
           
           // Initialize storage service with Supabase adapter (if authenticated)
           await initializeStorageService()
           
           // Check for legacy data and migrate if needed (only on first load)
           if (previousUserId === null && storageService.hasLegacyData()) {
-            console.log('[TrackerApp] Legacy data detected, migrating to Supabase...')
+            if (isDev) {
+              console.log('[TrackerApp] Legacy data detected, migrating to Supabase...')
+            }
             const legacyHunts = storageService.loadLegacyData()
             if (legacyHunts && legacyHunts.length > 0) {
               // Migrate hunts to Supabase
@@ -128,7 +142,9 @@ export function TrackerApp() {
                   const existing = await storageService.getHuntById(hunt.id)
                   if (!existing) {
                     await storageService.createHunt(hunt)
-                    console.log(`[TrackerApp] Migrated hunt: ${hunt.name}`)
+                    if (isDev) {
+                      console.log(`[TrackerApp] Migrated hunt: ${hunt.name}`)
+                    }
                   }
                 } catch (migrateError) {
                   console.error(`[TrackerApp] Failed to migrate hunt ${hunt.id}:`, migrateError)
@@ -152,10 +168,12 @@ export function TrackerApp() {
             theme: preferences.theme,
           }
           
-          console.log('[TrackerApp] Data loaded from Supabase:', {
-            huntsCount: loadedState.hunts.length,
-            currentHuntId: loadedState.currentHuntId,
-          })
+          if (isDev) {
+            console.log('[TrackerApp] Data loaded from Supabase:', {
+              huntsCount: loadedState.hunts.length,
+              currentHuntId: loadedState.currentHuntId,
+            })
+          }
           
           setState(loadedState)
           setIsLoading(false)
@@ -203,7 +221,9 @@ export function TrackerApp() {
         if (initResult.error) {
           console.error('[TrackerApp] Error initializing profile:', initResult.error)
         } else {
-          console.log('[TrackerApp] Profile initialization completed')
+          if (isDev) {
+            console.log('[TrackerApp] Profile initialization completed')
+          }
         }
         
         // Refresh profile context to get updated signup_number and badges
@@ -228,57 +248,65 @@ export function TrackerApp() {
           const founderBadge = updatedProfile.founder_badge === true || updatedProfile.founder_badge === 'true'
           const founderPopupShown = updatedProfile.founder_popup_shown === true || updatedProfile.founder_popup_shown === 'true'
           
-          // DEBUG: Log raw values from Supabase
-          console.log('[TrackerApp] RAW profile data from Supabase:', {
-            profileId: updatedProfile.id,
-            signup_number: updatedProfile.signup_number,
-            founder_badge: updatedProfile.founder_badge,
-            founder_popup_shown: updatedProfile.founder_popup_shown,
-            founder_badge_type: typeof updatedProfile.founder_badge,
-            founder_popup_shown_type: typeof updatedProfile.founder_popup_shown,
-            created_at: updatedProfile.created_at,
-          })
-          
-          // DEBUG: Log processed values
-          console.log('[TrackerApp] Processed founder values:', {
-            signupNumber,
-            founderBadge,
-            founderPopupShown,
-            founderBadgeIsTrue: founderBadge === true,
-            founderPopupShownIsFalse: founderPopupShown === false,
-          })
+          // DEBUG: Log raw values from Supabase (dev only)
+          if (isDev) {
+            console.log('[TrackerApp] RAW profile data from Supabase:', {
+              profileId: updatedProfile.id,
+              signup_number: updatedProfile.signup_number,
+              founder_badge: updatedProfile.founder_badge,
+              founder_popup_shown: updatedProfile.founder_popup_shown,
+              founder_badge_type: typeof updatedProfile.founder_badge,
+              founder_popup_shown_type: typeof updatedProfile.founder_popup_shown,
+              created_at: updatedProfile.created_at,
+            })
+            
+            // DEBUG: Log processed values
+            console.log('[TrackerApp] Processed founder values:', {
+              signupNumber,
+              founderBadge,
+              founderPopupShown,
+              founderBadgeIsTrue: founderBadge === true,
+              founderPopupShownIsFalse: founderPopupShown === false,
+            })
+          }
           
           // Show popup if:
           // 1. User has founder_badge = true
           // 2. User hasn't seen the popup yet (founder_popup_shown = false)
           const shouldShowPopup = founderBadge === true && founderPopupShown === false
           
-          console.log('[TrackerApp] Popup eligibility check:', {
-            signupNumber,
-            founderBadge,
-            founderPopupShown,
-            shouldShowPopup,
-            conditionBreakdown: {
-              'founderBadge === true': founderBadge === true,
-              'founderPopupShown === false': founderPopupShown === false,
-              'combined': shouldShowPopup,
-            },
-          })
+          if (isDev) {
+            console.log('[TrackerApp] Popup eligibility check:', {
+              signupNumber,
+              founderBadge,
+              founderPopupShown,
+              shouldShowPopup,
+              conditionBreakdown: {
+                'founderBadge === true': founderBadge === true,
+                'founderPopupShown === false': founderPopupShown === false,
+                'combined': shouldShowPopup,
+              },
+            })
+          }
           
           if (shouldShowPopup) {
-            console.log(`[TrackerApp] ✅ POPUP TRIGGERED - User #${signupNumber} qualifies for popup - showing celebration`)
+            if (isDev) {
+              console.log(`[TrackerApp] ✅ POPUP TRIGGERED - User #${signupNumber} qualifies for popup - showing celebration`)
+            }
             // Small delay to ensure UI is ready
             setTimeout(() => {
               setShowFirst151Popup(true)
             }, 500)
           } else {
-            console.log('[TrackerApp] ❌ POPUP SKIPPED - User does not qualify:', {
-              hasSignupNumber: signupNumber != null,
-              signupNumber,
-              founderBadge,
-              founderPopupShown,
-              reason: founderBadge !== true ? 'founder_badge !== true' : founderPopupShown !== false ? 'founder_popup_shown !== false (already seen)' : 'unknown',
-            })
+            if (isDev) {
+              console.log('[TrackerApp] ❌ POPUP SKIPPED - User does not qualify:', {
+                hasSignupNumber: signupNumber != null,
+                signupNumber,
+                founderBadge,
+                founderPopupShown,
+                reason: founderBadge !== true ? 'founder_badge !== true' : founderPopupShown !== false ? 'founder_popup_shown !== false (already seen)' : 'unknown',
+              })
+            }
           }
         } else {
           console.warn('[TrackerApp] ❌ No profile found after initialization')
@@ -323,51 +351,58 @@ export function TrackerApp() {
     const founderPopupShown = profile.founder_popup_shown === true || 
                               (typeof profile.founder_popup_shown === 'string' && profile.founder_popup_shown === 'true')
 
-    // DEBUG: Log profile from context
-    console.log('[TrackerApp] Profile from context (for popup check):', {
-      profileId: profile.id,
-      signup_number: profile.signup_number,
-      founder_badge: profile.founder_badge,
-      founder_popup_shown: profile.founder_popup_shown,
-      founder_badge_type: typeof profile.founder_badge,
-      founder_popup_shown_type: typeof profile.founder_popup_shown,
-    })
+    // DEBUG: Log profile from context (dev only)
+    if (isDev) {
+      console.log('[TrackerApp] Profile from context (for popup check):', {
+        profileId: profile.id,
+        signup_number: profile.signup_number,
+        founder_badge: profile.founder_badge,
+        founder_popup_shown: profile.founder_popup_shown,
+        founder_badge_type: typeof profile.founder_badge,
+        founder_popup_shown_type: typeof profile.founder_popup_shown,
+      })
 
-    // DEBUG: Log processed values
-    console.log('[TrackerApp] Processed founder values from context:', {
-      signupNumber,
-      founderBadge,
-      founderPopupShown,
-      founderBadgeIsTrue: founderBadge === true,
-      founderPopupShownIsFalse: founderPopupShown === false,
-    })
+      // DEBUG: Log processed values
+      console.log('[TrackerApp] Processed founder values from context:', {
+        signupNumber,
+        founderBadge,
+        founderPopupShown,
+        founderBadgeIsTrue: founderBadge === true,
+        founderPopupShownIsFalse: founderPopupShown === false,
+      })
+    }
 
     // Show popup if:
     // 1. User has founder_badge = true
     // 2. User hasn't seen the popup yet (founder_popup_shown = false)
     const shouldShowPopup = founderBadge === true && founderPopupShown === false
 
-    console.log('[TrackerApp] Popup eligibility check (from context):', {
-      signupNumber,
-      founderBadge,
-      founderPopupShown,
-      shouldShowPopup,
-      conditionBreakdown: {
-        'founderBadge === true': founderBadge === true,
-        'founderPopupShown === false': founderPopupShown === false,
-        'combined': shouldShowPopup,
-      },
-    })
+    if (isDev) {
+      console.log('[TrackerApp] Popup eligibility check (from context):', {
+        signupNumber,
+        founderBadge,
+        founderPopupShown,
+        shouldShowPopup,
+        conditionBreakdown: {
+          'founderBadge === true': founderBadge === true,
+          'founderPopupShown === false': founderPopupShown === false,
+          'combined': shouldShowPopup,
+        },
+      })
+    }
 
     if (shouldShowPopup) {
-      console.log(`[TrackerApp] ✅ POPUP TRIGGERED (from context) - User #${signupNumber} qualifies for popup - showing celebration`)
+      if (isDev) {
+        console.log(`[TrackerApp] ✅ POPUP TRIGGERED (from context) - User #${signupNumber} qualifies for popup - showing celebration`)
+      }
       popupCheckedRef.current = true
       // Small delay to ensure UI is ready
       setTimeout(() => {
         setShowFirst151Popup(true)
       }, 500)
     } else {
-      console.log('[TrackerApp] ❌ POPUP SKIPPED (from context) - User does not qualify:', {
+      if (isDev) {
+        console.log('[TrackerApp] ❌ POPUP SKIPPED (from context) - User does not qualify:', {
         hasSignupNumber: signupNumber != null,
         signupNumber,
         founderBadge,
@@ -506,12 +541,16 @@ export function TrackerApp() {
         }
         
         console.error('[TrackerApp] Error message:', errorMessage)
-        console.error('[TrackerApp] Error details:', errorDetails)
-        console.error('[TrackerApp] Full error object:', error)
+        if (isDev) {
+          console.error('[TrackerApp] Error details:', errorDetails)
+          console.error('[TrackerApp] Full error object:', error)
+        }
         
         // Don't show error toast for "Pokémon must be selected" - hunt will be saved when Pokémon is selected
         if (errorMessage.includes('Pokémon must be selected') || errorMessage.includes('Pokémon not selected')) {
-          console.log('[TrackerApp] Skipping error toast - hunt will be saved when Pokémon is selected')
+          if (isDev) {
+            console.log('[TrackerApp] Skipping error toast - hunt will be saved when Pokémon is selected')
+          }
           return
         }
         
@@ -555,12 +594,14 @@ export function TrackerApp() {
       // Either currentHuntId is null or points to a completed/archived hunt that doesn't exist
       // Auto-select the first active hunt
       const firstActiveHuntId = activeHunts[0].id
-      console.log('[TrackerApp] Auto-selecting first active hunt:', {
-        activeHuntsCount: activeHunts.length,
-        currentHuntId: state.currentHuntId,
-        firstActiveHuntId,
-        firstHuntName: activeHunts[0].name,
-      })
+      if (isDev) {
+        console.log('[TrackerApp] Auto-selecting first active hunt:', {
+          activeHuntsCount: activeHunts.length,
+          currentHuntId: state.currentHuntId,
+          firstActiveHuntId,
+          firstHuntName: activeHunts[0].name,
+        })
+      }
       if (state.currentHuntId !== firstActiveHuntId) {
         updateState({ currentHuntId: firstActiveHuntId })
       }
@@ -590,7 +631,9 @@ export function TrackerApp() {
   }
 
   const updateHunt = (id: string, updates: Partial<Hunt>) => {
+    if (isDev) {
     console.log('[App] updateHunt called:', { id, updates })
+  }
     setState((prev) => {
       const updated = {
         ...prev,
@@ -891,14 +934,16 @@ export function TrackerApp() {
     return null
   }
 
-  console.log('TrackerApp rendering main UI', { 
-    totalHunts: state.hunts.length,
-    activeHunts: activeHunts.length, 
-    currentHunt: currentHunt?.id,
-    currentHuntId: state.currentHuntId,
-    activeHuntIds: activeHunts.map(h => h.id),
-    activeHuntNames: activeHunts.map(h => h.name),
-  })
+  if (isDev) {
+    console.log('TrackerApp rendering main UI', { 
+      totalHunts: state.hunts.length,
+      activeHunts: activeHunts.length, 
+      currentHunt: currentHunt?.id,
+      currentHuntId: state.currentHuntId,
+      activeHuntIds: activeHunts.map(h => h.id),
+      activeHuntNames: activeHunts.map(h => h.name),
+    })
+  }
   
   return (
     <>
@@ -1032,10 +1077,14 @@ export function TrackerApp() {
                 key={`dark-mode-${state.darkMode}`}
                 darkMode={state.darkMode}
                 onToggle={() => {
-                  console.log('TrackerApp: Dark mode toggle clicked')
-                  console.log('Current darkMode:', state.darkMode)
+                  if (isDev) {
+                    console.log('TrackerApp: Dark mode toggle clicked')
+                    console.log('Current darkMode:', state.darkMode)
+                  }
                   updateState({ darkMode: !state.darkMode })
-                  console.log('State updated, new darkMode should be:', !state.darkMode)
+                  if (isDev) {
+                    console.log('State updated, new darkMode should be:', !state.darkMode)
+                  }
                 }}
               />
               
@@ -1263,6 +1312,10 @@ export function TrackerApp() {
         </>
       )}
     </div>
+    </>
+  )
+}
+/div>
     </>
   )
 }

@@ -1,6 +1,8 @@
 import { supabase } from './client'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
+const isDev = import.meta.env.DEV
+
 // Note: signInWithGoogle and signOut are now in AuthContext
 // This file only contains profile-related functions
 
@@ -49,16 +51,18 @@ export async function getUserProfile(userId: string) {
       return { profile: null, error }
     }
 
-    // DEBUG: Log founder fields and badges from Supabase
-    console.log('[getUserProfile] Profile fetched from Supabase:', {
-      id: data?.id,
-      signup_number: data?.signup_number,
-      founder_badge: data?.founder_badge,
-      founder_popup_shown: data?.founder_popup_shown,
-      pokeverse_member: data?.pokeverse_member,
-      badges: data?.badges,
-      has_seen_first_151_popup: data?.has_seen_first_151_popup, // Legacy field
-    })
+    // DEBUG: Log founder fields and badges from Supabase (dev only)
+    if (isDev) {
+      console.log('[getUserProfile] Profile fetched from Supabase:', {
+        id: data?.id,
+        signup_number: data?.signup_number,
+        founder_badge: data?.founder_badge,
+        founder_popup_shown: data?.founder_popup_shown,
+        pokeverse_member: data?.pokeverse_member,
+        badges: data?.badges,
+        has_seen_first_151_popup: data?.has_seen_first_151_popup, // Legacy field
+      })
+    }
 
     return { profile: data, error: null }
   } catch (err) {
@@ -193,7 +197,9 @@ export async function updateProfileDisplayName(
  */
 export async function initializeUserProfile(userId: string): Promise<{ error: Error | null }> {
   try {
-    console.log('[initializeUserProfile] Starting initialization for user:', userId)
+    if (isDev) {
+      console.log('[initializeUserProfile] Starting initialization for user:', userId)
+    }
     
     // Ensure profile exists first
     const ensureResult = await ensureProfileExists(userId)
@@ -209,22 +215,26 @@ export async function initializeUserProfile(userId: string): Promise<{ error: Er
       return { error: profileError || new Error('Profile not found') }
     }
     
-    console.log('[initializeUserProfile] Current profile:', {
-      id: currentProfile.id,
-      signup_number: currentProfile.signup_number,
-      founder_badge: currentProfile.founder_badge,
-      founder_popup_shown: currentProfile.founder_popup_shown,
-      created_at: currentProfile.created_at,
-    })
+    if (isDev) {
+      console.log('[initializeUserProfile] Current profile:', {
+        id: currentProfile.id,
+        signup_number: currentProfile.signup_number,
+        founder_badge: currentProfile.founder_badge,
+        founder_popup_shown: currentProfile.founder_popup_shown,
+        created_at: currentProfile.created_at,
+      })
+    }
     
     // IMPORTANT: signup_number is assigned by Supabase trigger - do NOT calculate it
     // Only read it from the database
     const signupNumber = currentProfile.signup_number
     
-    if (!signupNumber) {
-      console.log('[initializeUserProfile] signup_number not yet assigned by trigger - will be set automatically')
-    } else {
-      console.log('[initializeUserProfile] signup_number from database:', signupNumber)
+    if (isDev) {
+      if (!signupNumber) {
+        console.log('[initializeUserProfile] signup_number not yet assigned by trigger - will be set automatically')
+      } else {
+        console.log('[initializeUserProfile] signup_number from database:', signupNumber)
+      }
     }
     
     // Ensure founder_popup_shown is initialized (default to false if null)
@@ -235,12 +245,16 @@ export async function initializeUserProfile(userId: string): Promise<{ error: Er
     
     if (currentProfile.founder_popup_shown === null || currentProfile.founder_popup_shown === undefined) {
       updatePayload.founder_popup_shown = false
-      console.log('[initializeUserProfile] Initializing founder_popup_shown = false')
+      if (isDev) {
+        console.log('[initializeUserProfile] Initializing founder_popup_shown = false')
+      }
     }
     
     // Only update if there's something to update
     if (Object.keys(updatePayload).length > 0) {
-      console.log('[initializeUserProfile] Updating profile with:', updatePayload)
+      if (isDev) {
+        console.log('[initializeUserProfile] Updating profile with:', updatePayload)
+      }
       
       const { error: updateError } = await supabase
         .from('profiles')
@@ -252,9 +266,13 @@ export async function initializeUserProfile(userId: string): Promise<{ error: Er
         return { error: updateError }
       }
       
-      console.log('[initializeUserProfile] Profile initialization completed successfully')
+      if (isDev) {
+        console.log('[initializeUserProfile] Profile initialization completed successfully')
+      }
     } else {
-      console.log('[initializeUserProfile] No updates needed - profile already initialized')
+      if (isDev) {
+        console.log('[initializeUserProfile] No updates needed - profile already initialized')
+      }
     }
     
     return { error: null }
@@ -284,11 +302,13 @@ export async function markFirst151PopupSeen(userId: string): Promise<{ error: Er
       return { error: error }
     }
     
-    console.log('[markFirst151PopupSeen] Successfully updated founder_popup_shown = true')
-    console.log('[markFirst151PopupSeen] Updated profile:', {
-      id: data?.id,
-      founder_popup_shown: data?.founder_popup_shown,
-    })
+    if (isDev) {
+      console.log('[markFirst151PopupSeen] Successfully updated founder_popup_shown = true')
+      console.log('[markFirst151PopupSeen] Updated profile:', {
+        id: data?.id,
+        founder_popup_shown: data?.founder_popup_shown,
+      })
+    }
     
     return { error: null }
   } catch (err) {

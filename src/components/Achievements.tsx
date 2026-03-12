@@ -6,6 +6,8 @@ import { useUserProfile } from '@/context/UserProfileContext'
 import { formatDate } from '@/lib/utils'
 import { Sparkles, Award, Star } from 'lucide-react'
 
+const isDev = import.meta.env.DEV
+
 interface AchievementCardProps {
   badgeId: BadgeId
   unlockedDate: Date
@@ -51,87 +53,121 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
       
       <CardHeader className="pb-3 pt-3">
         <div className="flex flex-col items-center text-center space-y-3">
-          {/* Badge Showcase Area - Static Stage with Floating Badge */}
-          <div className="relative w-full overflow-hidden" style={{ height: '320px' }}>
-            {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
-            <div className="absolute inset-0 flex items-end justify-center pb-0">
-              <img
-                src="/badges/podium.png"
-                alt="Trophy Podium"
-                className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
-              />
-              {/* Future: Founder number overlay will be positioned here on the podium nameplate */}
-            </div>
-            
-            {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: '80px' }}>
+          {/* Badge Showcase Area - Different layout for PokéVerse badge */}
+          {isPokeverseBadge ? (
+            /* PokéVerse Badge - Simple centered orb display */
+            <div className="w-full flex flex-col items-center">
               {!imageError ? (
-                <div className="relative">
-                  <img
-                    src={badgeImagePath}
-                    alt={badge.name}
-                    className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"
-                    style={{
-                      animation: 'badge-float 3s ease-in-out infinite',
-                    }}
-                    onError={() => setImageError(true)}
-                  />
-                  {/* Shadow under badge */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0" />
-                  
-                  {/* Pokémon-style sparkles around badge */}
-                  {isFounderBadge && (
-                    <>
-                      <div 
-                        className="absolute -top-2 -left-2 w-5 h-5 pointer-events-none z-20"
-                        style={{
-                          animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
-                          animationDelay: '0s',
-                        }}
-                      >
-                        <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
-                        <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
-                      </div>
-                      
-                      <div 
-                        className="absolute -top-2 -right-2 w-5 h-5 pointer-events-none z-20"
-                        style={{
-                          animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
-                          animationDelay: '0.1s',
-                        }}
-                      >
-                        <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
-                        <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
-                      </div>
-                      
-                      <div 
-                        className="absolute -bottom-2 -right-2 w-5 h-5 pointer-events-none z-20"
-                        style={{
-                          animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
-                          animationDelay: '0.2s',
-                        }}
-                      >
-                        <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
-                        <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
-                      </div>
-                    </>
-                  )}
-                </div>
+                <img
+                  src={badgeImagePath}
+                  alt={badge.name}
+                  className="w-24 h-24 object-contain"
+                  style={{
+                    width: '96px',
+                    height: '96px',
+                    objectFit: 'contain',
+                    margin: '0 auto 16px auto',
+                    display: 'block',
+                  }}
+                  onError={() => setImageError(true)}
+                />
               ) : (
-                <div className="relative">
-                  <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center drop-shadow-2xl relative z-10"
-                    style={{
-                      animation: 'badge-float 3s ease-in-out infinite',
-                    }}
-                  >
-                    <span className="text-5xl">{badge.icon || '✨'}</span>
-                  </div>
-                  {/* Shadow under badge */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0" />
+                <div 
+                  className="w-24 h-24 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center"
+                  style={{
+                    width: '96px',
+                    height: '96px',
+                    margin: '0 auto 16px auto',
+                    display: 'block',
+                  }}
+                >
+                  <span className="text-4xl">{badge.icon || '✨'}</span>
                 </div>
               )}
             </div>
-          </div>
+          ) : (
+            /* Other Badges - Static Stage with Floating Badge */
+            <div className="relative w-full overflow-hidden" style={{ height: '320px' }}>
+              {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
+              <div className="absolute inset-0 flex items-end justify-center pb-0">
+                <img
+                  src="/badges/podium.png"
+                  alt="Trophy Podium"
+                  className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
+                />
+                {/* Future: Founder number overlay will be positioned here on the podium nameplate */}
+              </div>
+              
+              {/* Floating Badge Layer - Only Animated Element */}
+              <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: '80px' }}>
+                {!imageError ? (
+                  <div className="relative">
+                    <img
+                      src={badgeImagePath}
+                      alt={badge.name}
+                      className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"
+                      style={{
+                        animation: 'badge-float 3s ease-in-out infinite',
+                      }}
+                      onError={() => setImageError(true)}
+                    />
+                    {/* Shadow under badge */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0" />
+                    
+                    {/* Pokémon-style sparkles around badge */}
+                    {isFounderBadge && (
+                      <>
+                        <div 
+                          className="absolute -top-2 -left-2 w-5 h-5 pointer-events-none z-20"
+                          style={{
+                            animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
+                            animationDelay: '0s',
+                          }}
+                        >
+                          <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
+                          <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
+                        </div>
+                        
+                        <div 
+                          className="absolute -top-2 -right-2 w-5 h-5 pointer-events-none z-20"
+                          style={{
+                            animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
+                            animationDelay: '0.1s',
+                          }}
+                        >
+                          <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
+                          <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
+                        </div>
+                        
+                        <div 
+                          className="absolute -bottom-2 -right-2 w-5 h-5 pointer-events-none z-20"
+                          style={{
+                            animation: 'pokemon-shiny-sparkle-burst 3s ease-out infinite',
+                            animationDelay: '0.2s',
+                          }}
+                        >
+                          <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full blur-[4px] drop-shadow-xl" />
+                          <div className="absolute inset-0 bg-white/80 rounded-full blur-[2px]" />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center drop-shadow-2xl relative z-10"
+                      style={{
+                        animation: 'badge-float 3s ease-in-out infinite',
+                      }}
+                    >
+                      <span className="text-5xl">{badge.icon || '✨'}</span>
+                    </div>
+                    {/* Shadow under badge */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Rarity/Status Label */}
           <div className="flex justify-center">
@@ -220,9 +256,9 @@ export function Achievements() {
                          (typeof pokeverseBadgeRaw === 'number' && pokeverseBadgeRaw === 1) || 
                          (typeof pokeverseBadgeRaw === 'string' && pokeverseBadgeRaw === '1')
   
-  // DEBUG: Log raw profile values
+  // DEBUG: Log raw profile values (dev only)
   useEffect(() => {
-    if (profile) {
+    if (profile && isDev) {
       console.log('[Achievements] 📊 RAW profile data from context:', {
         profileId: profile.id,
         signup_number: profile.signup_number,
@@ -264,9 +300,9 @@ export function Achievements() {
     ? [...finalDisplayBadges, 'pokeverse_member']
     : finalDisplayBadges
   
-  // Debug logging - detailed breakdown
+  // Debug logging - detailed breakdown (dev only)
   useEffect(() => {
-    if (profile) {
+    if (profile && isDev) {
       console.log('[Achievements] 🔍 BADGE INJECTION LOGIC:', {
         step1_rawProfile: {
           signup_number: profile.signup_number,
@@ -340,7 +376,8 @@ export function Achievements() {
       displayBadgesLength: displayBadges.length,
       finalDisplayBadges,
       finalDisplayBadgesLength: finalDisplayBadges.length,
-    })
+      })
+    }
     return (
       <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh] py-12">
         <div className="relative">
@@ -376,23 +413,27 @@ export function Achievements() {
           : new Date(), // For now, use current date for other badges
         signupNumber: badgeId === 'first_151_trainer' ? (signupNumber ?? undefined) : undefined,
       }
-      console.log(`[Achievements] ✅ Adding achievement to render list:`, {
-        badgeId: achievement.badgeId,
-        signupNumber: achievement.signupNumber,
-        unlockedDate: achievement.unlockedDate,
-      })
+      if (isDev) {
+        console.log(`[Achievements] ✅ Adding achievement to render list:`, {
+          badgeId: achievement.badgeId,
+          signupNumber: achievement.signupNumber,
+          unlockedDate: achievement.unlockedDate,
+        })
+      }
       return achievement
     })
 
-  // DEBUG: Final achievement list
-  console.log('[Achievements] 🎯 Final achievements array to render:', {
-    count: achievements.length,
-    achievements: achievements.map(a => ({
-      badgeId: a.badgeId,
-      signupNumber: a.signupNumber,
-    })),
-    includesFounder: achievements.some(a => a.badgeId === 'first_151_trainer'),
-  })
+  // DEBUG: Final achievement list (dev only)
+  if (isDev) {
+    console.log('[Achievements] 🎯 Final achievements array to render:', {
+      count: achievements.length,
+      achievements: achievements.map(a => ({
+        badgeId: a.badgeId,
+        signupNumber: a.signupNumber,
+      })),
+      includesFounder: achievements.some(a => a.badgeId === 'first_151_trainer'),
+    })
+  }
 
   return (
     <div className="space-y-6">

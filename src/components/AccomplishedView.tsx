@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Trophy, ArrowLeft, Search, Sparkles, Star, CheckCircle2, Trash2 } from 'lucide-react'
+
+const isDev = import.meta.env.DEV
 import { useUserProfile } from '@/context/UserProfileContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -82,41 +84,51 @@ export function AccomplishedView({
         }
       })
 
-      console.log(`[AccomplishedView] Found ${pokemonToFetch.size} Pokemon to fetch images for`)
+      if (isDev) {
+        console.log(`[AccomplishedView] Found ${pokemonToFetch.size} Pokemon to fetch images for`)
+      }
 
       const fetchPromises = Array.from(pokemonToFetch.values()).map(async (pokemonData) => {
         const pokemonKey = `${pokemonData.id}-${pokemonData.name}`
         
         // Double-check we haven't already fetched (race condition protection)
         if (pokemonImages.has(pokemonKey)) {
-          console.log(`[AccomplishedView] Pokemon ${pokemonKey} already in state, skipping`)
+          if (isDev) {
+            console.log(`[AccomplishedView] Pokemon ${pokemonKey} already in state, skipping`)
+          }
           return
         }
 
         try {
-          console.log(`[AccomplishedView] Fetching Pokemon images for:`, {
-            id: pokemonData.id,
-            name: pokemonData.name,
-            huntId: pokemonData.huntId,
-            formName: pokemonData.formName,
-          })
+          if (isDev) {
+            console.log(`[AccomplishedView] Fetching Pokemon images for:`, {
+              id: pokemonData.id,
+              name: pokemonData.name,
+              huntId: pokemonData.huntId,
+              formName: pokemonData.formName,
+            })
+          }
 
           const fetchedPokemon = await fetchPokemon(pokemonData.id, pokemonData.formName)
           
           if (fetchedPokemon) {
-            console.log(`[AccomplishedView] Fetched Pokemon images:`, {
-              id: fetchedPokemon.id,
-              name: fetchedPokemon.name,
-              image: fetchedPokemon.image ? 'present' : 'missing',
-              shinyImage: fetchedPokemon.shinyImage ? 'present' : 'missing',
-              imageUrl: fetchedPokemon.image,
-              shinyImageUrl: fetchedPokemon.shinyImage,
-            })
+            if (isDev) {
+              console.log(`[AccomplishedView] Fetched Pokemon images:`, {
+                id: fetchedPokemon.id,
+                name: fetchedPokemon.name,
+                image: fetchedPokemon.image ? 'present' : 'missing',
+                shinyImage: fetchedPokemon.shinyImage ? 'present' : 'missing',
+                imageUrl: fetchedPokemon.image,
+                shinyImageUrl: fetchedPokemon.shinyImage,
+              })
+            }
             
             setPokemonImages((prev) => {
               // Check again before setting (avoid race conditions)
               if (prev.has(pokemonKey)) {
-                console.log(`[AccomplishedView] Pokemon ${pokemonKey} was already fetched, skipping state update`)
+                if (isDev) {
+                  console.log(`[AccomplishedView] Pokemon ${pokemonKey} was already fetched, skipping state update`)
+                }
                 return prev
               }
               const updated = new Map(prev)
@@ -124,7 +136,9 @@ export function AccomplishedView({
               return updated
             })
           } else {
-            console.warn(`[AccomplishedView] Failed to fetch Pokemon ${pokemonData.id}`)
+            if (isDev) {
+              console.warn(`[AccomplishedView] Failed to fetch Pokemon ${pokemonData.id}`)
+            }
           }
         } catch (error) {
           console.error(`[AccomplishedView] Error fetching Pokemon ${pokemonData.id}:`, error)
@@ -132,7 +146,9 @@ export function AccomplishedView({
       })
 
       await Promise.all(fetchPromises)
-      console.log(`[AccomplishedView] Completed fetching Pokemon images`)
+      if (isDev) {
+        console.log(`[AccomplishedView] Completed fetching Pokemon images`)
+      }
     }
 
     if (hunts.length > 0) {
@@ -239,19 +255,23 @@ export function AccomplishedView({
                 image: hydratedPokemon.image || hunt.pokemon.image,
                 shinyImage: hydratedPokemon.shinyImage || hunt.pokemon.shinyImage,
               }
-              console.log(`[AccomplishedView] Using hydrated Pokemon for hunt ${hunt.id}:`, {
-                id: displayPokemon.id,
-                name: displayPokemon.name,
-                image: displayPokemon.image ? 'present' : 'missing',
-                shinyImage: displayPokemon.shinyImage ? 'present' : 'missing',
-              })
+              if (isDev) {
+                console.log(`[AccomplishedView] Using hydrated Pokemon for hunt ${hunt.id}:`, {
+                  id: displayPokemon.id,
+                  name: displayPokemon.name,
+                  image: displayPokemon.image ? 'present' : 'missing',
+                  shinyImage: displayPokemon.shinyImage ? 'present' : 'missing',
+                })
+              }
             } else {
-              console.log(`[AccomplishedView] No hydrated Pokemon found for hunt ${hunt.id}, using original:`, {
-                id: hunt.pokemon.id,
-                name: hunt.pokemon.name,
-                image: hunt.pokemon.image ? 'present' : 'missing',
-                shinyImage: hunt.pokemon.shinyImage ? 'present' : 'missing',
-              })
+              if (isDev) {
+                console.log(`[AccomplishedView] No hydrated Pokemon found for hunt ${hunt.id}, using original:`, {
+                  id: hunt.pokemon.id,
+                  name: hunt.pokemon.name,
+                  image: hunt.pokemon.image ? 'present' : 'missing',
+                  shinyImage: hunt.pokemon.shinyImage ? 'present' : 'missing',
+                })
+              }
             }
           }
 
