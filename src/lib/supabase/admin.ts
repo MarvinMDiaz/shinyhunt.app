@@ -1,4 +1,7 @@
 import { supabase } from './client'
+import { logger } from '@/lib/logger'
+
+const isDev = import.meta.env.DEV
 
 /**
  * Check if the current authenticated user exists in public.admin_users table
@@ -14,7 +17,6 @@ export async function checkIsAdmin(): Promise<boolean> {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError || !session?.user) {
-      console.log('[checkIsAdmin] No session found')
       return false
     }
 
@@ -28,16 +30,14 @@ export async function checkIsAdmin(): Promise<boolean> {
       .maybeSingle()
 
     if (error) {
-      console.error('[checkIsAdmin] Error querying admin_users:', error)
+      logger.error('Error querying admin users')
       return false
     }
 
     const isAdmin = !!data
-    console.log('[checkIsAdmin] User admin status:', { userId, isAdmin })
-    
     return isAdmin
   } catch (err) {
-    console.error('[checkIsAdmin] Exception:', err)
+    logger.error('Exception checking admin status')
     return false
   }
 }

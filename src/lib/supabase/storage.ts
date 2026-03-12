@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { logger } from '@/lib/logger'
 
 const AVATAR_BUCKET = 'avatars'
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB in bytes
@@ -44,7 +45,7 @@ export async function uploadAvatar(
       })
 
     if (uploadError) {
-      console.error('Error uploading avatar:', uploadError)
+      logger.error('Error uploading avatar')
       return {
         url: null,
         error: uploadError,
@@ -68,7 +69,7 @@ export async function uploadAvatar(
       error: null,
     }
   } catch (err) {
-    console.error('Unexpected error uploading avatar:', err)
+    logger.error('Unexpected error uploading avatar')
     return {
       url: null,
       error: err as Error,
@@ -89,14 +90,14 @@ export async function deleteAvatar(userId: string): Promise<{ error: Error | nul
       .from(AVATAR_BUCKET)
       .remove([filePath])
 
-    if (error) {
-      console.error('Error deleting avatar:', error)
+      if (error) {
+        logger.error('Error deleting avatar')
       return { error }
     }
 
     return { error: null }
   } catch (err) {
-    console.error('Unexpected error deleting avatar:', err)
+    logger.error('Unexpected error deleting avatar')
     return { error: err as Error }
   }
 }

@@ -10,6 +10,7 @@ import {
 import { loadGames, getGameById } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { ThemeId } from '@/lib/themes'
+import { logger } from '@/lib/logger'
 
 interface GameSelectorProps {
   selectedGameId: string | null | undefined
@@ -40,7 +41,7 @@ export function GameSelector({
         })
         setGames(sortedGames)
       } catch (error) {
-        console.error('Failed to load games:', error)
+        logger.error('Failed to load games')
       } finally {
         setIsLoading(false)
       }

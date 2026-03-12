@@ -11,6 +11,7 @@ import { fetchPokemon } from '@/lib/pokeapi'
 import { loadGames, getGameById } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { filterPokemonByGame } from '@/data/pokemonGameAvailability'
+import { logger } from '@/lib/logger'
 
 interface ShinyDexProps {
   hunts: Hunt[]
@@ -47,7 +48,7 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
         const loadedGames = await loadGames()
         setGames(loadedGames)
       } catch (error) {
-        console.error('Failed to load games:', error)
+        logger.error('Failed to load games')
       }
     }
     fetchGames()
@@ -166,7 +167,7 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
         
         setPokemonList(tiles)
       } catch (error) {
-        console.error('Failed to load Pokémon list:', error)
+        logger.error('Failed to load Pokémon list')
       } finally {
         setLoading(false)
       }
@@ -197,7 +198,7 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
           }
           return tile
         } catch (error) {
-          console.error(`Failed to load Pokémon ${tile.id}:`, error)
+          logger.error('Failed to load Pokémon')
           return tile
         }
       })

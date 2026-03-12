@@ -107,11 +107,7 @@ function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onTogg
               key={`dark-mode-${darkMode}`}
               darkMode={darkMode}
               onToggle={() => {
-                console.log('LandingNavBar: onToggleDarkMode called')
-                console.log('Current darkMode prop:', darkMode)
-                console.log('Calling onToggleDarkMode function...')
                 onToggleDarkMode()
-                console.log('onToggleDarkMode function called')
               }}
             />
           </div>

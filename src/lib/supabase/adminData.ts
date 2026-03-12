@@ -10,6 +10,7 @@
 
 import { supabase } from './client'
 import type { AdminStats, UserOverview, RecentActivity } from '@/lib/adminData'
+import { logger } from '@/lib/logger'
 
 // Local types for leaderboard entries
 export interface LeaderboardEntry {
@@ -42,7 +43,7 @@ export async function getAdminStats(): Promise<AdminStats> {
       .select('id, created_at, last_active_at')
 
     if (profilesError) {
-      console.error('[getAdminStats] Error fetching profiles:', profilesError)
+      logger.error('Error fetching profiles for admin stats')
       throw profilesError
     }
 
@@ -52,14 +53,10 @@ export async function getAdminStats(): Promise<AdminStats> {
       .select('id, user_id, status, shiny_found, completed_at, created_at, final_encounters, current_encounters')
 
     if (huntsError) {
-      console.error('[getAdminStats] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for admin stats')
       throw huntsError
     }
 
-    console.log('[getAdminStats] Fetched data:', {
-      profilesCount: profiles?.length || 0,
-      huntsCount: hunts?.length || 0,
-    })
 
     // User stats
     const totalUsers = profiles?.length || 0
@@ -162,7 +159,7 @@ export async function getAdminStats(): Promise<AdminStats> {
       averageShinyOdds,
     }
   } catch (error) {
-    console.error('[getAdminStats] Exception:', error)
+    logger.error('Exception in getAdminStats')
     // Return zeros on error instead of crashing
     return {
       totalUsers: 0,
@@ -202,7 +199,7 @@ export async function getUserOverview(): Promise<UserOverview[]> {
       .order('created_at', { ascending: false })
 
     if (profilesError) {
-      console.error('[getUserOverview] Error fetching profiles:', profilesError)
+      logger.error('Error fetching profiles for user overview')
       throw profilesError
     }
 
@@ -212,14 +209,10 @@ export async function getUserOverview(): Promise<UserOverview[]> {
       .select('user_id, status, shiny_found, completed_at')
 
     if (huntsError) {
-      console.error('[getUserOverview] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for user overview')
       throw huntsError
     }
 
-    console.log('[getUserOverview] Fetched:', {
-      profilesCount: profiles?.length || 0,
-      huntsCount: hunts?.length || 0,
-    })
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
@@ -247,7 +240,7 @@ export async function getUserOverview(): Promise<UserOverview[]> {
       }
     })
   } catch (error) {
-    console.error('[getUserOverview] Exception:', error)
+    logger.error('Exception in getUserOverview')
     return []
   }
 }
@@ -267,7 +260,7 @@ export async function getRecentActivity(limit: number = 50): Promise<RecentActiv
       .limit(limit)
 
     if (profilesError) {
-      console.error('[getRecentActivity] Error fetching profiles:', profilesError)
+      logger.error('Error fetching profiles for recent activity')
     } else {
       (profiles || []).forEach(profile => {
         activities.push({
@@ -298,7 +291,7 @@ export async function getRecentActivity(limit: number = 50): Promise<RecentActiv
       .limit(limit * 2) // Get more to account for multiple activity types per hunt
 
     if (huntsError) {
-      console.error('[getRecentActivity] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for recent activity')
     } else {
       // Create a map of user IDs to names from profiles
       const userNameMap = new Map<string, string>()
@@ -357,7 +350,7 @@ export async function getRecentActivity(limit: number = 50): Promise<RecentActiv
 
     return activities.slice(0, limit)
   } catch (error) {
-    console.error('[getRecentActivity] Exception:', error)
+    logger.error('Exception in getRecentActivity')
     return []
   }
 }
@@ -372,7 +365,7 @@ export async function getPopularPokemon(): Promise<Array<{ name: string; hunted:
       .select('pokemon_name, status, completed_at, shiny_found')
 
     if (huntsError) {
-      console.error('[getPopularPokemon] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for popular pokemon')
       throw huntsError
     }
 
@@ -399,7 +392,7 @@ export async function getPopularPokemon(): Promise<Array<{ name: string; hunted:
       .sort((a, b) => b.hunted - a.hunted)
       .slice(0, 10) // Top 10
   } catch (error) {
-    console.error('[getPopularPokemon] Exception:', error)
+    logger.error('Exception in getPopularPokemon')
     return []
   }
 }
@@ -416,7 +409,7 @@ export async function getLongestHunts(limit: number = 10): Promise<LeaderboardEn
       .limit(limit * 2) // Get more to filter properly
 
     if (huntsError) {
-      console.error('[getLongestHunts] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for longest hunts')
       throw huntsError
     }
 
@@ -444,7 +437,7 @@ export async function getLongestHunts(limit: number = 10): Promise<LeaderboardEn
       },
     }))
   } catch (error) {
-    console.error('[getLongestHunts] Exception:', error)
+    logger.error('Exception in getLongestHunts')
     return []
   }
 }
@@ -461,7 +454,7 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
       .or('completed_at.not.is.null,status.eq.completed')
 
     if (huntsError) {
-      console.error('[getTopUsersByCompletions] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for top users by completions')
       throw huntsError
     }
 
@@ -488,7 +481,7 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
       .in('id', topUserIds)
 
     if (profilesError) {
-      console.error('[getTopUsersByCompletions] Error fetching profiles:', profilesError)
+      logger.error('Error fetching profiles for top users by completions')
       throw profilesError
     }
 
@@ -521,7 +514,7 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
       })
       .filter(entry => entry.value > 0)
   } catch (error) {
-    console.error('[getTopUsersByCompletions] Exception:', error)
+    logger.error('Exception in getTopUsersByCompletions')
     return []
   }
 }
@@ -541,7 +534,7 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
       .limit(limit * 2)
 
     if (huntsError) {
-      console.error('[getTopUsersByActiveHuntLength] Error fetching hunts:', huntsError)
+      logger.error('Error fetching hunts for top users by active hunt length')
       throw huntsError
     }
 
@@ -574,7 +567,7 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
       .in('id', userIds)
 
     if (profilesError) {
-      console.error('[getTopUsersByActiveHuntLength] Error fetching profiles:', profilesError)
+      logger.error('Error fetching profiles for top users by active hunt length')
       throw profilesError
     }
 
@@ -604,7 +597,10 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
       }
     })
   } catch (error) {
-    console.error('[getTopUsersByActiveHuntLength] Exception:', error)
+    logger.error('Exception in getTopUsersByActiveHuntLength')
     return []
+  }
+}
+
   }
 }

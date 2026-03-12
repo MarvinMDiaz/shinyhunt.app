@@ -31,6 +31,7 @@ import { formatDate } from '@/lib/utils'
 import { SEO } from '@/components/SEO'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
 import type { BadgeId } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null)
@@ -48,8 +49,6 @@ export function AdminDashboard() {
     const loadData = async () => {
       try {
         setLoading(true)
-        console.log('[AdminDashboard] Loading admin data from Supabase...')
-        
         const [
           statsData, 
           usersData, 
@@ -68,16 +67,6 @@ export function AdminDashboard() {
           getTopUsersByActiveHuntLength(10),
         ])
 
-        console.log('[AdminDashboard] Loaded data:', {
-          stats: statsData,
-          usersCount: usersData.length,
-          activityCount: activityData.length,
-          pokemonCount: pokemonData.length,
-          longestHuntsCount: longestHuntsData.length,
-          topCompletionsCount: topCompletionsData.length,
-          topActiveHuntCount: topActiveHuntData.length,
-        })
-
         setStats(statsData)
         setUserOverview(usersData)
         setRecentActivity(activityData)
@@ -86,7 +75,7 @@ export function AdminDashboard() {
         setTopUsersByCompletions(topCompletionsData)
         setTopUsersByActiveHuntLength(topActiveHuntData)
       } catch (error) {
-        console.error('[AdminDashboard] Error loading admin data:', error)
+        logger.error('Error loading admin data')
         // Show error state - keep zeros for now
       } finally {
         setLoading(false)

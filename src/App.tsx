@@ -31,7 +31,4 @@ function App() {
   )
 }
 
-// Debug: Log when App renders
-console.log('App component rendered')
-
 export default App

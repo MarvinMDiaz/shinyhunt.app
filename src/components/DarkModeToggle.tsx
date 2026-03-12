@@ -1,5 +1,6 @@
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { logger } from '@/lib/logger'
 
 interface DarkModeToggleProps {
   darkMode: boolean
@@ -7,25 +8,18 @@ interface DarkModeToggleProps {
 }
 
 export function DarkModeToggle({ darkMode, onToggle }: DarkModeToggleProps) {
-  console.log('DarkModeToggle rendered, darkMode:', darkMode, 'onToggle exists:', !!onToggle)
-  
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log('=== DARK MODE TOGGLE CLICKED ===')
-    console.log('Current darkMode value:', darkMode)
-    console.log('onToggle function:', onToggle)
     
     try {
       if (typeof onToggle === 'function') {
-        console.log('Calling onToggle function...')
         onToggle()
-        console.log('onToggle function called successfully')
       } else {
-        console.error('onToggle is not a function!', typeof onToggle)
+        logger.error('onToggle is not a function')
       }
     } catch (error) {
-      console.error('Error calling onToggle:', error)
+      logger.error('Error calling onToggle')
     }
   }
   

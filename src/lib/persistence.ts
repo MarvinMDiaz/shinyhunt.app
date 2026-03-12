@@ -5,6 +5,7 @@
 
 import { AppState } from '@/types'
 import { saveState, loadState, loadStateSync } from './storage'
+import { logger } from './logger'
 
 const BACKUP_KEY = 'shiny-hunter-backup'
 
@@ -18,7 +19,7 @@ export async function saveStateSafely(state: AppState): Promise<boolean> {
     await saveState(state)
     return true
   } catch (error: any) {
-    console.error('Failed to save state to Supabase:', error)
+    logger.error('Failed to save state to Supabase')
     return false
   }
 }
@@ -49,7 +50,7 @@ export async function loadStateSafely(): Promise<AppState> {
     
     return state
   } catch (error) {
-    console.error('Failed to load state from Supabase:', error)
+    logger.error('Failed to load state from Supabase')
     // Return default state if load fails
     return await loadState()
   }
@@ -69,19 +70,18 @@ export function loadStateSafelySync(): AppState {
     
     return state
   } catch (error) {
-    console.error('Failed to load main state, trying backup...', error)
+    logger.error('Failed to load main state, trying backup')
     
     try {
       const backupStr = localStorage.getItem(BACKUP_KEY)
       if (backupStr) {
         const backup = JSON.parse(backupStr)
         if (backup.data) {
-          console.log('Restored from backup')
           return backup.data
         }
       }
     } catch (backupError) {
-      console.error('Failed to load backup:', backupError)
+      logger.error('Failed to load backup')
     }
     
     return loadStateSync()

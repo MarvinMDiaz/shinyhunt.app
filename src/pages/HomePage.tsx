@@ -61,16 +61,12 @@ export function HomePage() {
       return
     }
     
-    console.log('DarkMode changed, saving:', darkMode)
     savePreferences({ darkMode })
   }, [darkMode])
 
   const handleToggleDarkMode = () => {
-    console.log('=== HANDLE TOGGLE DARK MODE CALLED ===')
-    console.log('Current darkMode state:', darkMode)
     setDarkMode((prev) => {
       const newValue = !prev
-      console.log('State update: darkMode changing from', prev, 'to', newValue)
       // Save preference immediately
       savePreferences({ darkMode: newValue })
       return newValue
@@ -96,7 +92,7 @@ export function HomePage() {
       </>
     )
   } catch (error) {
-    console.error('Error rendering HomePage:', error)
+    logger.error('Error rendering HomePage')
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

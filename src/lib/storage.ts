@@ -11,6 +11,7 @@ import { Hunt, AppState, ExportData } from '@/types'
 import { ThemeId } from './themes'
 import { storageService } from './storageService'
 import { loadPreferences, savePreferences } from './preferencesStorage'
+import { logger } from './logger'
 
 // Legacy key removed - using storageService now
 const POKEMON_CACHE_KEY = 'pokemon-cache'
@@ -74,7 +75,7 @@ export async function loadState(): Promise<AppState> {
       version: CURRENT_VERSION,
     }
   } catch (error) {
-    console.error('Failed to load state:', error)
+    logger.error('Failed to load state')
     return getDefaultState()
   }
 }
@@ -105,17 +106,9 @@ const isDev = import.meta.env.DEV
 
 export async function saveState(state: AppState): Promise<void> {
   try {
-    if (isDev) {
-      console.log('[saveState] Starting save, hunts count:', state.hunts.length)
-    }
-    
     // Ensure storage service is initialized with correct adapter
-    const { initializeStorageService, getCurrentAdapterType } = await import('./storageService')
+    const { initializeStorageService } = await import('./storageService')
     await initializeStorageService()
-    const adapterType = getCurrentAdapterType()
-    if (isDev) {
-      console.log('[saveState] Using adapter:', adapterType)
-    }
     
     // Save hunts individually (storageService handles batch operations)
     // Note: This is a simplified approach. In production, you'd want to batch updates.
@@ -123,10 +116,9 @@ export async function saveState(state: AppState): Promise<void> {
     
     try {
       existingHunts = await storageService.getAllHunts()
-      console.log('[saveState] Existing hunts from storage:', existingHunts.length)
       // existingIds removed - not needed for Supabase persistence
     } catch (getAllError) {
-      console.warn('[saveState] Failed to get existing hunts (will try to create anyway):', getAllError)
+      logger.warn('Failed to get existing hunts, will try to create anyway')
       // Continue - we'll try to create hunts anyway, and if they exist, update will handle it
     }
     
@@ -137,41 +129,23 @@ export async function saveState(state: AppState): Promise<void> {
         const existing = await storageService.getHuntById(hunt.id).catch(() => null)
         
         if (existing) {
-          if (isDev) {
-            console.log('[saveState] Hunt exists, updating:', hunt.id, hunt.name)
-          }
-          const updated = await storageService.updateHunt(hunt.id, hunt)
-          if (isDev) {
-            console.log('[saveState] Hunt updated successfully:', updated.id)
-          }
+          await storageService.updateHunt(hunt.id, hunt)
         } else {
           // Validate hunt has required fields before creating
-          if (isDev) {
-            console.log('[saveState] Hunt does not exist, creating:', hunt.id, hunt.name)
-            console.log('[saveState] Hunt pokemon:', hunt.pokemon)
-          }
-          
           if (!hunt.pokemon || !hunt.pokemon.name) {
-            if (isDev) {
-              console.warn(`[saveState] Skipping hunt ${hunt.id} - Pokémon not selected yet`)
-            }
             // Don't throw - just skip this hunt until Pokémon is selected
             // The hunt will be saved once the user selects a Pokémon
             continue
           }
           
-          const created = await storageService.createHunt(hunt)
-          console.log('[saveState] Hunt created successfully:', created.id)
+          await storageService.createHunt(hunt)
         }
       } catch (huntError) {
-        console.error(`[saveState] CRITICAL: Failed to save hunt ${hunt.id}:`, huntError)
+        logger.error('Failed to save hunt')
         if (huntError instanceof Error) {
-          console.error(`[saveState] Error message: ${huntError.message}`)
-          console.error(`[saveState] Error stack: ${huntError.stack}`)
-          
           // If error is about missing Pokémon, don't throw - just skip
           if (huntError.message.includes('Pokémon must be selected')) {
-            console.warn(`[saveState] Skipping hunt ${hunt.id} - Pokémon not selected yet`)
+            logger.warn('Skipping hunt - Pokémon not selected yet')
             continue
           }
         }
@@ -183,9 +157,6 @@ export async function saveState(state: AppState): Promise<void> {
     // Delete hunts that are no longer in state
     for (const existingHunt of existingHunts) {
       if (!state.hunts.find(h => h.id === existingHunt.id)) {
-        if (isDev) {
-          console.log('[saveState] Deleting hunt:', existingHunt.id)
-        }
         await storageService.deleteHunt(existingHunt.id)
       }
     }
@@ -198,12 +169,8 @@ export async function saveState(state: AppState): Promise<void> {
       darkMode: state.darkMode,
       theme: state.theme,
     })
-    
-    if (isDev) {
-      console.log('[saveState] Save completed successfully')
-    }
   } catch (error) {
-    console.error('[saveState] Failed to save state:', error)
+    logger.error('Failed to save state')
     throw error
   }
 }
@@ -247,7 +214,7 @@ export function getPokemonCache(): Map<number, CachedPokemon> {
     
     return cache
   } catch (error) {
-    console.error('Failed to load Pokémon cache:', error)
+    logger.error('Failed to load Pokémon cache')
     return new Map()
   }
 }
@@ -260,7 +227,7 @@ export function savePokemonCache(cache: Map<number, CachedPokemon>): void {
     })
     localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(obj))
   } catch (error) {
-    console.error('Failed to save Pokémon cache:', error)
+    logger.error('Failed to save Pokémon cache')
   }
 }
 
@@ -308,7 +275,7 @@ export function importData(json: string): AppState | null {
       version: CURRENT_VERSION,
     }
   } catch (error) {
-    console.error('Failed to import data:', error)
+    logger.error('Failed to import data')
     return null
   }
 }

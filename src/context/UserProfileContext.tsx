@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import { getUserProfile } from '@/lib/supabase/auth'
+import { logger } from '@/lib/logger'
 
 const isDev = import.meta.env.DEV
 
@@ -95,7 +96,7 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       const { profile: fetchedProfile, error } = await getUserProfile(userId)
 
       if (error) {
-        console.error('[UserProfileContext] Error fetching profile:', error)
+        logger.error('Error fetching profile')
         setProfile(null)
         localStorage.removeItem(cacheKey)
         return
@@ -116,15 +117,6 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
           fetchedProfile.badges = []
         }
 
-        // DEBUG: Log founder fields before setting profile
-        console.log('[UserProfileContext] Setting profile with founder fields:', {
-          id: fetchedProfile.id,
-          signup_number: fetchedProfile.signup_number,
-          founder_badge: fetchedProfile.founder_badge,
-          founder_popup_shown: fetchedProfile.founder_popup_shown,
-          badges: fetchedProfile.badges,
-        })
-
         setProfile(fetchedProfile)
         
         // Cache avatar_url with user-specific key (only if authenticated)
@@ -138,7 +130,7 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
         localStorage.removeItem(cacheKey)
       }
     } catch (error) {
-      console.error('[UserProfileContext] Error loading profile:', error)
+      logger.error('Error loading profile')
       setProfile(null)
       localStorage.removeItem(getAvatarCacheKey(userId))
     } finally {
@@ -180,9 +172,6 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       loadProfile(user.id)
     } else {
       // User is not authenticated - clear profile and all cached data
-      if (isDev) {
-        console.log('[UserProfileContext] User not authenticated, clearing profile and cache')
-      }
       setProfile(null)
       setLoadingProfile(false)
       

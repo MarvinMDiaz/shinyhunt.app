@@ -11,6 +11,7 @@
  */
 
 import { ThemeId } from './themes'
+import { logger } from './logger'
 
 const PREFERENCES_KEY = 'shinyhunt_preferences'
 
@@ -57,7 +58,7 @@ export function loadPreferences(): UserPreferences {
       },
     }
   } catch (error) {
-    console.error('Failed to load preferences:', error)
+    logger.error('Failed to load preferences')
     return DEFAULT_PREFERENCES
   }
 }
@@ -74,7 +75,7 @@ export function savePreferences(preferences: Partial<UserPreferences>): void {
     }
     localStorage.setItem(PREFERENCES_KEY, JSON.stringify(updated))
   } catch (error) {
-    console.error('Failed to save preferences:', error)
+    logger.error('Failed to save preferences')
   }
 }
 

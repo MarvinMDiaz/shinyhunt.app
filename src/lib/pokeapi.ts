@@ -1,5 +1,6 @@
 import { Pokemon } from '@/types'
 import { getPokemonCache, savePokemonCache, CachedPokemon } from './storage'
+import { logger } from './logger'
 
 const API_BASE = 'https://pokeapi.co/api/v2'
 
@@ -38,15 +39,15 @@ export async function fetchPokemon(idOrName: string | number, formName?: string)
     } catch (error) {
       clearTimeout(timeoutId)
       if (error instanceof Error && error.name === 'AbortError') {
-        console.warn('Pokémon API request timed out:', idOrName)
+        logger.warn('Pokémon API request timed out')
       } else {
-        console.error('Failed to fetch Pokémon:', error)
+        logger.error('Failed to fetch Pokémon')
       }
       return null
     }
     
     if (!response.ok) {
-      console.warn('Pokémon API returned error:', response.status, idOrName)
+      logger.warn('Pokémon API returned error')
       return null
     }
     
@@ -93,7 +94,7 @@ export async function fetchPokemon(idOrName: string | number, formName?: string)
     
     return pokemon
   } catch (error) {
-    console.error('Failed to fetch Pokémon:', error)
+    logger.error('Failed to fetch Pokémon')
     return null
   }
 }
@@ -161,7 +162,7 @@ export async function fetchPokemonForms(pokemonId: number): Promise<Pokemon[]> {
               displayName: formDisplayName ? `${pokemonData.name.charAt(0).toUpperCase() + pokemonData.name.slice(1)} (${formDisplayName})` : undefined,
             } as Pokemon
           } catch (error) {
-            console.error('Failed to fetch form:', form.name, error)
+            logger.error('Failed to fetch form')
             return null
           }
         })
@@ -172,7 +173,7 @@ export async function fetchPokemonForms(pokemonId: number): Promise<Pokemon[]> {
     
     return forms
   } catch (error) {
-    console.error('Failed to fetch Pokémon forms:', error)
+    logger.error('Failed to fetch Pokémon forms')
     return []
   }
 }
@@ -252,7 +253,7 @@ export async function searchPokemon(query: string): Promise<Pokemon[]> {
       return true
     }).slice(0, 30) // Limit total results
   } catch (error) {
-    console.error('Failed to search Pokémon:', error)
+    logger.error('Failed to search Pokémon')
     return []
   }
 }

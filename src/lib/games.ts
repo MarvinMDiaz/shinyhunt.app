@@ -6,6 +6,7 @@
  */
 
 import { DEFAULT_GAMES, Game } from '@/constants/defaultGames'
+import { logger } from './logger'
 
 let gamesCache: Game[] | null = null
 
@@ -27,7 +28,7 @@ export async function loadGames(): Promise<Game[]> {
     gamesCache = games
     return games
   } catch (error) {
-    console.warn('Failed to load games.json, using fallback:', error)
+    logger.warn('Failed to load games.json, using fallback')
     gamesCache = DEFAULT_GAMES
     return DEFAULT_GAMES
   }

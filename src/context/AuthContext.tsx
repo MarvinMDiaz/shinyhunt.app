@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 interface AuthContextType {
   user: SupabaseUser | null
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     })
 
     if (error) {
-      console.error('[Auth] Google sign-in error:', error)
+      logger.error('Google sign-in error')
       throw error
     }
   }
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Sign out from Supabase
       await supabase.auth.signOut({ scope: 'local' })
     } catch (error) {
-      console.error('[Auth] Sign out error:', error)
+      logger.error('Sign out error')
       // Still clear state even if signOut fails
       setSession(null)
       setUser(null)

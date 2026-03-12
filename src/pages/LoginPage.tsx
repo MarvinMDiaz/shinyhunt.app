@@ -6,6 +6,7 @@ import { AuthLayout } from '@/components/auth/AuthLayout'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/context/AuthContext'
 import { SEO } from '@/components/SEO'
+import { logger } from '@/lib/logger'
 
 export function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -32,7 +33,7 @@ export function LoginPage() {
       // If successful, Supabase will redirect to Google OAuth
       // The page will redirect, so don't reset loading state here
     } catch (err) {
-      console.error('Google sign-in error:', err)
+      logger.error('Google sign-in error')
       toast({
         title: 'Sign in failed',
         description: err instanceof Error ? err.message : 'Failed to sign in with Google. Please try again.',

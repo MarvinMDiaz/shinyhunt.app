@@ -13,6 +13,7 @@ import { Hunt, Pokemon } from '@/types'
 import { ThemeId } from '@/lib/themes'
 import { PokemonSearch } from './PokemonSearch'
 import { GameSelector } from './GameSelector'
+import { logger } from '@/lib/logger'
 import { getGameById, loadGamesSync } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { isPokemonAvailableInGame } from '@/data/pokemonGameAvailability'
@@ -79,7 +80,7 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
           }
         })
         .catch((error) => {
-          console.error('[HuntDetails] Failed to fetch Pokemon images:', error)
+          logger.error('Failed to fetch Pokemon images')
         })
     } else {
       // Images already present, use them
@@ -241,7 +242,7 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
                         className="block w-full h-full object-contain"
                         style={{ maxWidth: '108px', maxHeight: '108px' }}
                         onError={() => {
-                          console.error('[HuntDetails] Failed to load regular sprite:', regularImageSrc)
+                          logger.error('Failed to load regular sprite')
                           setRegularImageFailed(true)
                         }}
                         loading="lazy"
@@ -265,7 +266,7 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
                         className="block w-full h-full object-contain"
                         style={{ maxWidth: '108px', maxHeight: '108px' }}
                         onError={() => {
-                          console.error('[HuntDetails] Failed to load shiny sprite:', shinyImageSrc)
+                          logger.error('Failed to load shiny sprite')
                           setShinyImageFailed(true)
                         }}
                         loading="lazy"
@@ -326,7 +327,6 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
               } else {
                 const numValue = parseInt(value, 10)
                 if (!isNaN(numValue) && numValue >= 0) {
-                  console.log('[HuntDetails] Setting goal to:', numValue)
                   onUpdate({ goal: numValue })
                 }
               }
@@ -340,7 +340,6 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
               } else {
                 const numValue = parseInt(value, 10)
                 if (!isNaN(numValue) && numValue >= 0) {
-                  console.log('[HuntDetails] Final goal on blur:', numValue)
                   onUpdate({ goal: numValue })
                   setGoalInput(numValue.toString())
                 } else {

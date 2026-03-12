@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port $PORT",
     "start": "npx serve -s dist -l tcp://0.0.0.0:$PORT",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "check-console": "node scripts/check-console-usage.js",
+    "prebuild": "npm run check-console"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",

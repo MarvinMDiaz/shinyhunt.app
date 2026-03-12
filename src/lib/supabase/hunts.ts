@@ -8,6 +8,7 @@
 import { supabase } from './client'
 import { Hunt, HistoryEntry } from '@/types'
 import type { HuntStorageAdapter } from '../storageService'
+import { logger } from '@/lib/logger'
 
 const isDev = import.meta.env.DEV
 
@@ -88,28 +89,21 @@ function safeStringify(obj: any, space?: number): string {
  * Get current authenticated user ID
  */
 async function getCurrentUserId(): Promise<string> {
-  if (isDev) {
-    console.log('[getCurrentUserId] Checking session...')
-  }
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
   
   if (sessionError) {
-    console.error('[getCurrentUserId] Session error:', sessionError)
+    logger.error('Session error')
     throw new Error(`Session error: ${sessionError.message}`)
   }
   
   if (!session) {
-    console.error('[getCurrentUserId] No session found')
+    logger.error('No session found')
     throw new Error('User not authenticated - no session')
   }
   
   if (!session.user?.id) {
-    console.error('[getCurrentUserId] Session exists but no user.id')
+    logger.error('Session exists but no user.id')
     throw new Error('User not authenticated - no user ID in session')
-  }
-  
-  if (isDev) {
-    console.log('[getCurrentUserId] Authenticated userId:', session.user.id)
   }
   return session.user.id
 }
@@ -155,20 +149,12 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
     let pokemonName: string | null = null
     let pokemonDexNumber: number | null = null
     
-    if (isDev) {
-      console.log('[SupabaseHuntAdapter] serializeHunt - Extracting Pokemon data')
-      console.log('[SupabaseHuntAdapter] hunt.pokemon:', hunt.pokemon)
-    }
-    
     if (hunt.pokemon && typeof hunt.pokemon === 'object') {
       const pokemon = hunt.pokemon as any
       pokemonName = pokemon.name ? String(pokemon.name) : null
       pokemonDexNumber = pokemon.id != null ? Number(pokemon.id) : null
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Extracted pokemon_name:', pokemonName, 'pokemon_dex_number:', pokemonDexNumber)
-      }
     } else {
-      console.warn('[SupabaseHuntAdapter] WARNING: hunt.pokemon is null or invalid:', hunt.pokemon)
+      logger.warn('Hunt pokemon is null or invalid')
     }
     
     // Determine shiny_found (hunt is completed and has endCount > 0)
@@ -189,8 +175,6 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       final_encounters: hunt.endCount != null ? Number(hunt.endCount) : null,
       completed_at: hunt.completedAt instanceof Date ? hunt.completedAt.toISOString() : null,
     }
-    
-    console.log('[SupabaseHuntAdapter] Final payload pokemon_name:', dbPayload.pokemon_name)
     
     return dbPayload
   }
@@ -216,14 +200,6 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         shinyImage: undefined, // Will be fetched from API when needed
       }
       
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] deserializeHunt - Reconstructed Pokemon:', {
-          id: pokemon.id,
-          name: pokemon.name,
-          image: pokemon.image ? 'present' : 'missing (will fetch)',
-          shinyImage: pokemon.shinyImage ? 'present' : 'missing (will fetch)',
-        })
-      }
     }
     
     return {
@@ -251,9 +227,6 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
   async getAllHunts(): Promise<Hunt[]> {
     try {
       const userId = await getCurrentUserId()
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] getAllHunts - userId:', userId)
-      }
       
       const { data, error } = await supabase
         .from('hunts')
@@ -262,18 +235,13 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.error('[SupabaseHuntAdapter] Failed to load hunts from Supabase:', error)
+        logger.error('Failed to load hunts')
         // If table doesn't exist, return empty array (graceful degradation)
         if (error.code === 'PGRST116') {
-          console.warn('[SupabaseHuntAdapter] Hunts table does not exist (PGRST116)')
+          logger.warn('Hunts table does not exist')
           return []
         }
         throw error
-      }
-
-      console.log('[SupabaseHuntAdapter] getAllHunts - rows returned:', data?.length || 0)
-      if (data && data.length > 0) {
-        console.log('[SupabaseHuntAdapter] Sample hunt data:', safeStringify(data[0], 2))
       }
 
       if (!data || data.length === 0) {
@@ -281,13 +249,12 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       }
 
       const deserialized = data.map(row => this.deserializeHunt(row as any))
-      console.log('[SupabaseHuntAdapter] getAllHunts - deserialized count:', deserialized.length)
       return deserialized
     } catch (error) {
-      console.error('[SupabaseHuntAdapter] Error in getAllHunts:', error)
+      logger.error('Error in getAllHunts')
       // If user not authenticated, return empty array
       if (error instanceof Error && error.message === 'User not authenticated') {
-        console.warn('[SupabaseHuntAdapter] User not authenticated, returning empty array')
+        logger.warn('User not authenticated, returning empty array')
         return []
       }
       throw error
@@ -309,7 +276,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         if (error.code === 'PGRST116') {
           return null // Table doesn't exist
         }
-        console.error('Failed to load hunt from Supabase:', error)
+        logger.error('Failed to load hunt')
         return null
       }
 
@@ -319,7 +286,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
 
       return this.deserializeHunt(data as any)
     } catch (error) {
-      console.error('Error in getHuntById:', error)
+      logger.error('Error in getHuntById')
       return null
     }
   }
@@ -328,28 +295,8 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
     try {
       // Get authenticated user ID
       const userId = await getCurrentUserId()
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] createHunt START')
-        console.log('[SupabaseHuntAdapter] Authenticated userId:', userId)
-        console.log('[SupabaseHuntAdapter] Hunt to create:', {
-          id: hunt.id,
-          name: hunt.name,
-          pokemon: hunt.pokemon,
-          gameId: hunt.gameId,
-          goal: hunt.goal,
-          count: hunt.count,
-          status: hunt.status,
-        })
-      }
       
       const serialized = this.serializeHunt(hunt, userId)
-      
-      // Safe logging - use safeStringify to avoid circular reference errors (dev only)
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Serialized payload for insert:', safeStringify(serialized, 2))
-        console.log('[SupabaseHuntAdapter] Payload keys:', Object.keys(serialized))
-        console.log('[SupabaseHuntAdapter] Payload user_id:', serialized.user_id)
-      }
       
       // STRICT validation - only allow whitelisted columns
       const payloadKeys = Object.keys(serialized)
@@ -360,15 +307,8 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       ]
       const invalidKeys = payloadKeys.filter(k => !validDbColumns.includes(k))
       if (invalidKeys.length > 0) {
-        console.error('[SupabaseHuntAdapter] ERROR: Payload contains invalid database columns:', invalidKeys)
-        console.error('[SupabaseHuntAdapter] Valid columns are:', validDbColumns)
-        console.error('[SupabaseHuntAdapter] Payload keys:', payloadKeys)
+        logger.error('Payload contains invalid database columns')
         throw new Error(`Invalid columns in payload: ${invalidKeys.join(', ')}. Valid columns: ${validDbColumns.join(', ')}`)
-      }
-      
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Payload validation passed - all columns are valid')
-        console.log('[SupabaseHuntAdapter] Payload keys:', payloadKeys)
       }
 
       // Verify we have a user_id
@@ -377,32 +317,16 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       }
       
       // CRITICAL: Validate pokemon_name is not null (database has NOT NULL constraint)
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Validating pokemon_name before insert...')
-        console.log('[SupabaseHuntAdapter] pokemon_name value:', serialized.pokemon_name)
-        console.log('[SupabaseHuntAdapter] pokemon_dex_number value:', serialized.pokemon_dex_number)
-      }
-      
       if (!serialized.pokemon_name || serialized.pokemon_name.trim() === '') {
         const errorMsg = 'Cannot create hunt: Pokémon must be selected before saving. Please select a Pokémon in Hunt Details.'
-        console.error('[SupabaseHuntAdapter] VALIDATION FAILED:', errorMsg)
-        console.error('[SupabaseHuntAdapter] Hunt object:', {
-          id: hunt.id,
-          name: hunt.name,
-          pokemon: hunt.pokemon,
-        })
+        logger.error('Validation failed: pokemon_name missing')
         throw new Error(errorMsg)
       }
       
       if (serialized.pokemon_dex_number == null) {
         const errorMsg = 'Cannot create hunt: Pokémon dex number is missing. Please select a valid Pokémon.'
-        console.error('[SupabaseHuntAdapter] VALIDATION FAILED:', errorMsg)
+        logger.error('Validation failed: pokemon_dex_number missing')
         throw new Error(errorMsg)
-      }
-
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Validation passed - pokemon_name and pokemon_dex_number are present')
-        console.log('[SupabaseHuntAdapter] Calling supabase.from("hunts").insert()...')
       }
       const { data, error } = await supabase
         .from('hunts')
@@ -411,12 +335,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         .single()
 
       if (error) {
-        console.error('[SupabaseHuntAdapter] INSERT FAILED')
-        console.error('[SupabaseHuntAdapter] Error code:', error.code)
-        console.error('[SupabaseHuntAdapter] Error message:', error.message)
-        console.error('[SupabaseHuntAdapter] Error details:', safeStringify(error, 2))
-        console.error('[SupabaseHuntAdapter] Error hint:', error.hint)
-        console.error('[SupabaseHuntAdapter] Full error object:', error)
+        logger.error('Insert failed')
         
         // Create a more descriptive error that includes Supabase details
         const errorMessage = error.message || 'Unknown Supabase error'
@@ -432,21 +351,10 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         throw detailedError
       }
 
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] INSERT SUCCESS')
-        console.log('[SupabaseHuntAdapter] Data returned from Supabase:', safeStringify(data, 2))
-      }
       const deserialized = this.deserializeHunt(data as any)
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Deserialized hunt:', deserialized.id)
-      }
       return deserialized
     } catch (error) {
-      console.error('[SupabaseHuntAdapter] createHunt EXCEPTION:', error)
-      if (error instanceof Error) {
-        console.error('[SupabaseHuntAdapter] Exception message:', error.message)
-        console.error('[SupabaseHuntAdapter] Exception stack:', error.stack)
-      }
+      logger.error('createHunt exception')
       throw error
     }
   }
@@ -455,33 +363,19 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
     try {
       // Get authenticated user ID
       const userId = await getCurrentUserId()
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] updateHunt START')
-        console.log('[SupabaseHuntAdapter] Authenticated userId:', userId)
-        console.log('[SupabaseHuntAdapter] Hunt id to update:', id)
-        console.log('[SupabaseHuntAdapter] Updates:', safeStringify(updates, 2))
-      }
       
       // Get existing hunt to merge updates
       const existing = await this.getHuntById(id)
       if (!existing) {
-        console.error('[SupabaseHuntAdapter] updateHunt - hunt not found in database:', id)
+        logger.error('Update failed: hunt not found')
         throw new Error(`Hunt with id ${id} not found`)
       }
 
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Existing hunt found:', existing.id)
-      }
       const updatedHunt = { ...existing, ...updates }
       const serialized = this.serializeHunt(updatedHunt, userId)
 
       // Remove id and user_id from update (they shouldn't change)
       const { id: _, user_id: __, ...updateData } = serialized
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] Update payload:', safeStringify(updateData, 2))
-        console.log('[SupabaseHuntAdapter] Update filter: id=', id, 'user_id=', userId)
-        console.log('[SupabaseHuntAdapter] Calling supabase.from("hunts").update()...')
-      }
       const { data, error } = await supabase
         .from('hunts')
         .update(updateData)
@@ -491,11 +385,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         .single()
 
       if (error) {
-        console.error('[SupabaseHuntAdapter] UPDATE FAILED')
-        console.error('[SupabaseHuntAdapter] Error code:', error.code)
-        console.error('[SupabaseHuntAdapter] Error message:', error.message)
-        console.error('[SupabaseHuntAdapter] Error details:', safeStringify(error, 2))
-        console.error('[SupabaseHuntAdapter] Error hint:', error.hint)
+        logger.error('Update failed')
 
         // Create a more descriptive error that includes Supabase details
         const errorMessage = error.message || 'Unknown Supabase error'
@@ -511,17 +401,9 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         throw detailedError
       }
 
-      if (isDev) {
-        console.log('[SupabaseHuntAdapter] UPDATE SUCCESS')
-        console.log('[SupabaseHuntAdapter] Data returned from Supabase:', safeStringify(data, 2))
-      }
       return this.deserializeHunt(data as any)
     } catch (error) {
-      console.error('[SupabaseHuntAdapter] updateHunt EXCEPTION:', error)
-      if (error instanceof Error) {
-        console.error('[SupabaseHuntAdapter] Exception message:', error.message)
-        console.error('[SupabaseHuntAdapter] Exception stack:', error.stack)
-      }
+      logger.error('updateHunt exception')
       throw error
     }
   }
@@ -537,7 +419,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         .eq('user_id', userId) // Ensure user owns this hunt
 
       if (error) {
-        console.error('Failed to delete hunt from Supabase:', error)
+        logger.error('Failed to delete hunt')
         throw error
       }
 
@@ -547,7 +429,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         await this.setCurrentHuntId(null)
       }
     } catch (error) {
-      console.error('Error in deleteHunt:', error)
+      logger.error('Error in deleteHunt')
       throw error
     }
   }
@@ -564,7 +446,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         history: [...hunt.history, historyEntry],
       })
     } catch (error) {
-      console.error('Error in updateProgress:', error)
+      logger.error('Error in updateProgress')
       throw error
     }
   }
@@ -589,7 +471,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
         localStorage.removeItem(this.CURRENT_HUNT_KEY)
       }
     } catch (error) {
-      console.error('Error setting current hunt ID:', error)
+      logger.error('Error setting current hunt ID')
     }
   }
 
@@ -621,7 +503,7 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       }
       return null
     } catch (error) {
-      console.error('Failed to load legacy data:', error)
+      logger.error('Failed to load legacy data')
       return null
     }
   }

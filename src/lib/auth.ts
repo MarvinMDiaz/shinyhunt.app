@@ -201,7 +201,7 @@ export async function logout(): Promise<void> {
     // Clear user-specific caches
     clearUserSpecificCache(userId)
   } catch (error) {
-    console.error('Error signing out from Supabase:', error)
+    logger.error('Error signing out from Supabase')
     // Still clear caches even if sign out fails
     clearUserSpecificCache()
   }
@@ -257,7 +257,6 @@ export async function getCurrentUser(): Promise<User | null> {
     }
   } catch (err) {
     // Supabase not configured or error - fall back to localStorage
-    console.debug('Supabase auth not available, using localStorage fallback')
   }
   
   // Fallback to localStorage (backward compatibility)
@@ -396,7 +395,7 @@ export function getAllUsers(): User[] {
       createdAt: new Date(u.createdAt),
     }))
   } catch (error) {
-    console.error('Error loading users:', error)
+    logger.error('Error loading users')
     return []
   }
 }
@@ -415,7 +414,7 @@ export async function setUserAdmin(userEmail: string, isAdmin: boolean): Promise
     const userIndex = users.findIndex(u => u.email === userEmail)
     
     if (userIndex === -1) {
-      console.error('User not found:', userEmail)
+      logger.error('User not found')
       return false
     }
     
@@ -432,10 +431,9 @@ export async function setUserAdmin(userEmail: string, isAdmin: boolean): Promise
       localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser))
     }
     
-    console.log(`Admin status updated for ${userEmail}: ${isAdmin}`)
     return true
   } catch (error) {
-    console.error('Error setting admin status:', error)
+    logger.error('Error setting admin status')
     return false
   }
 }

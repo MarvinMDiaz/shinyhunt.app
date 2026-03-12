@@ -13,6 +13,7 @@ import { updateProfileAvatar } from '@/lib/supabase/auth'
 import { useAdmin } from '@/hooks/useAdmin'
 import { Settings } from 'lucide-react'
 import type { BadgeId } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 import { RedeemCodeDialog } from './RedeemCodeDialog'
 
 // Separator component - simple divider
@@ -80,7 +81,7 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
         description: 'Your display name has been updated.',
       })
     } catch (err) {
-      console.error('Error updating display name:', err)
+      logger.error('Error updating display name')
       toast({
         title: 'Update failed',
         description: err instanceof Error ? err.message : 'Failed to update display name. Please try again.',
@@ -100,7 +101,7 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
         description: 'You have been successfully signed out.',
       })
     } catch (error) {
-      console.error('Error during sign out:', error)
+      logger.error('Error during sign out')
       navigate('/', { replace: true })
       toast({
         title: 'Sign out error',
@@ -173,7 +174,7 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
         description: 'Your profile picture has been updated.',
       })
     } catch (err) {
-      console.error('Error uploading avatar:', err)
+      logger.error('Error uploading avatar')
       toast({
         title: 'Upload failed',
         description: 'An unexpected error occurred. Please try again.',

@@ -5,6 +5,8 @@ import App from './App.tsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { UserProfileProvider } from './context/UserProfileContext'
+// Import production console guard first to protect against accidental logging
+import './lib/productionConsoleGuard'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

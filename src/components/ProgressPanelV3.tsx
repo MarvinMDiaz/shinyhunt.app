@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Hunt } from '@/types'
 import { ThemeId } from '@/lib/themes'
 import { ProgressColorPicker } from './ProgressColorPicker'
+import { logger } from '@/lib/logger'
 import { HotkeyInput } from './HotkeyInput'
 import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
 import { loadGames, getGameById } from '@/lib/games'
@@ -101,7 +102,7 @@ export function ProgressPanelV3({
         const loadedGames = await loadGames()
         setGames(loadedGames)
       } catch (error) {
-        console.error('Failed to load games:', error)
+        logger.error('Failed to load games')
       }
     }
     loadGamesData()
@@ -118,7 +119,7 @@ export function ProgressPanelV3({
             setGameGeneration(game.generation)
           }
         } catch (error) {
-          console.error('Failed to load game generation:', error)
+          logger.error('Failed to load game generation')
         }
       }
     }
@@ -137,16 +138,6 @@ export function ProgressPanelV3({
   const availableHunts = (activeHunts || []).filter((h) => !h.archived && !h.completed)
   const showHuntSwitcher = availableHunts.length > 1 && onSelectHunt
   
-  // Debug logging (dev only)
-  if (isDev) {
-    console.log('[ProgressPanelV3] Hunt Switcher Debug:', {
-      activeHuntsCount: activeHunts?.length || 0,
-      availableHuntsCount: availableHunts.length,
-      hasOnSelectHunt: !!onSelectHunt,
-      showHuntSwitcher,
-      currentHuntId,
-    })
-  }
   
   // Track if user is typing in an input field or setting a hotkey
   const isTypingRef = useRef(false)
@@ -161,27 +152,17 @@ export function ProgressPanelV3({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger hotkeys if user is typing in an input field or setting a hotkey
       if (isTypingRef.current || isSettingHotkeyRef.current) {
-        console.log('ProgressPanelV3: Hotkey blocked - isTyping:', isTypingRef.current, 'isSettingHotkey:', isSettingHotkeyRef.current)
         return
       }
 
       // Check if the pressed key matches a hotkey
       const pressedKey = e.key === ' ' ? 'Space' : e.key.toUpperCase()
-      if (isDev) {
-        console.log('ProgressPanelV3: Key pressed:', pressedKey, 'incrementHotkey:', incrementHotkey, 'decrementHotkey:', decrementHotkey)
-      }
       
       if (pressedKey === incrementHotkey && canIncrement) {
-        if (isDev) {
-          console.log('ProgressPanelV3: Increment hotkey triggered')
-        }
         e.preventDefault()
         e.stopPropagation()
         onIncrement(1)
       } else if (pressedKey === decrementHotkey && canIncrement && hunt.count > 0) {
-        if (isDev) {
-          console.log('ProgressPanelV3: Decrement hotkey triggered')
-        }
         e.preventDefault()
         e.stopPropagation()
         onIncrement(-1)
@@ -225,9 +206,6 @@ export function ProgressPanelV3({
 
   // Save hotkey preferences when they change
   const handleIncrementHotkeyChange = (key: string) => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Updating increment hotkey to:', key)
-    }
     setIncrementHotkey(key)
     const currentPrefs = loadPreferences()
     savePreferences({
@@ -236,15 +214,9 @@ export function ProgressPanelV3({
         decrement: currentPrefs.hotkeys?.decrement || decrementHotkey,
       },
     })
-    if (isDev) {
-      console.log('ProgressPanelV3: Saved preferences:', loadPreferences().hotkeys)
-    }
   }
 
   const handleDecrementHotkeyChange = (key: string) => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Updating decrement hotkey to:', key)
-    }
     setDecrementHotkey(key)
     const currentPrefs = loadPreferences()
     savePreferences({
@@ -253,23 +225,14 @@ export function ProgressPanelV3({
         decrement: key,
       },
     })
-    if (isDev) {
-      console.log('ProgressPanelV3: Saved preferences:', loadPreferences().hotkeys)
-    }
   }
 
   // Wrapper functions to track hotkey setting state
   const handleIncrementHotkeyStart = () => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Starting to set increment hotkey')
-    }
     isSettingHotkeyRef.current = true
   }
 
   const handleIncrementHotkeyEnd = (key: string) => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Ending increment hotkey setting with key:', key)
-    }
     isSettingHotkeyRef.current = false
     // Force state update
     setIncrementHotkey(key)
@@ -277,16 +240,10 @@ export function ProgressPanelV3({
   }
 
   const handleDecrementHotkeyStart = () => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Starting to set decrement hotkey')
-    }
     isSettingHotkeyRef.current = true
   }
 
   const handleDecrementHotkeyEnd = (key: string) => {
-    if (isDev) {
-      console.log('ProgressPanelV3: Ending decrement hotkey setting with key:', key)
-    }
     isSettingHotkeyRef.current = false
     // Force state update
     setDecrementHotkey(key)
@@ -349,21 +306,6 @@ export function ProgressPanelV3({
   const chanceByNow = count > 0 ? (1 - Math.pow(1 - shinyOdds, count)) * 100 : 0
   const attemptsFor50Percent = calculateAttemptsForProbability(shinyOdds, 0.5)
   const attemptsFor90Percent = calculateAttemptsForProbability(shinyOdds, 0.9)
-
-  // Debug logging (dev only)
-  if (isDev) {
-    console.log('[ProgressPanelV3]', {
-      customGoal,
-      effectiveTarget,
-      hasCustomTarget,
-      count,
-      progress: progress.toFixed(1) + '%',
-      'hunt.goal': hunt.goal,
-      'hunt.count': hunt.count,
-      shinyOdds,
-      chanceByNow: chanceByNow.toFixed(2) + '%',
-    })
-  }
 
   return (
     <div className="space-y-6 w-full max-w-full box-border">

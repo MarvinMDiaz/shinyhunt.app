@@ -30,8 +30,6 @@ export function HotkeyInput({
     if (!isListening) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log('HotkeyInput: Key pressed in listening mode:', e.key, e.code, 'isListening:', isListening)
-      
       // Prevent default behavior
       e.preventDefault()
       e.stopPropagation()
@@ -39,7 +37,6 @@ export function HotkeyInput({
 
       // Handle Escape to cancel
       if (e.key === 'Escape') {
-        console.log('HotkeyInput: Escape pressed, canceling')
         setIsListening(false)
         onListeningEnd?.()
         return
@@ -47,7 +44,6 @@ export function HotkeyInput({
 
       // Ignore modifier keys alone
       if (['Control', 'Shift', 'Alt', 'Meta', 'Tab'].includes(e.key)) {
-        console.log('HotkeyInput: Modifier key ignored:', e.key)
         return
       }
 
@@ -64,13 +60,10 @@ export function HotkeyInput({
         // For function keys and other special keys, use the key as-is
         keyName = e.key
       }
-
-      console.log('HotkeyInput: Setting hotkey to:', keyName)
       
       // Update the hotkey - call onChange immediately
       setIsListening(false)
       onListeningEnd?.()
-      console.log('HotkeyInput: Calling onChange with:', keyName)
       onChangeRef.current(keyName)
     }
 

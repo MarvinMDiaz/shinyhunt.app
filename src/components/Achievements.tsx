@@ -5,6 +5,7 @@ import { getCurrentUser, getUserBadges, BadgeId } from '@/lib/auth'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { formatDate } from '@/lib/utils'
 import { Sparkles, Award, Star } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 const isDev = import.meta.env.DEV
 
@@ -50,16 +51,6 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
   // Podium: /badges/podium-pokeverse.png for PokéVerse badge
   const podiumImagePath = isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png'
   
-  // Debug logging (dev only)
-  if (isDev) {
-    if (isPokeverseBadge) {
-      console.log('[Achievements] PokéVerse badge detected - using podium-pokeverse.png:', {
-        badgeId,
-        isPokeverseBadge,
-        podiumImagePath,
-      })
-    }
-  }
 
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-card via-card/98 to-card/95 border-2 border-yellow-500/20 hover:border-yellow-500/50 hover:shadow-2xl hover:shadow-yellow-500/20 transition-all duration-500 group">
@@ -86,13 +77,8 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                   visibility: 'visible',
                   opacity: 1,
                 }}
-                onError={(e) => {
-                  console.error('[Achievements] Failed to load podium image:', {
-                    expectedPath: podiumImagePath,
-                    actualSrc: e.currentTarget.src,
-                    badgeId,
-                    isPokeverseBadge,
-                  })
+                onError={() => {
+                  logger.error('Failed to load podium image')
                 }}
               />
               {/* Future: Founder number overlay will be positioned here on the podium nameplate */}
@@ -259,26 +245,6 @@ export function Achievements() {
                          (typeof pokeverseBadgeRaw === 'number' && pokeverseBadgeRaw === 1) || 
                          (typeof pokeverseBadgeRaw === 'string' && pokeverseBadgeRaw === '1')
   
-  // DEBUG: Log raw profile values (dev only)
-  useEffect(() => {
-    if (profile && isDev) {
-      console.log('[Achievements] 📊 RAW profile data from context:', {
-        profileId: profile.id,
-        signup_number: profile.signup_number,
-        founder_badge: profile.founder_badge,
-        founder_badge_type: typeof profile.founder_badge,
-        founder_badge_value: founderBadgeRaw,
-        pokeverse_member: profile.pokeverse_member,
-        pokeverse_member_type: typeof profile.pokeverse_member,
-        pokeverse_member_value: pokeverseBadgeRaw,
-        pokeverseBadge: pokeverseBadge,
-        founder_popup_shown: profile.founder_popup_shown,
-        badges: profile.badges,
-        badges_type: typeof profile.badges,
-        badges_is_array: Array.isArray(profile.badges),
-      })
-    }
-  }, [profile, founderBadgeRaw, pokeverseBadgeRaw, pokeverseBadge])
   
   // CRITICAL: If user has founder_badge = true, ALWAYS ensure first_151_trainer is in badges array for display
   // This is the source of truth - founder_badge from Supabase determines if badge should show
@@ -303,54 +269,6 @@ export function Achievements() {
     ? [...finalDisplayBadges, 'pokeverse_member']
     : finalDisplayBadges
   
-  // Debug logging - detailed breakdown (dev only)
-  useEffect(() => {
-    if (profile && isDev) {
-      console.log('[Achievements] 🔍 BADGE INJECTION LOGIC:', {
-        step1_rawProfile: {
-          signup_number: profile.signup_number,
-          founder_badge: profile.founder_badge,
-          founder_badge_type: typeof profile.founder_badge,
-          founder_badge_raw_value: founderBadgeRaw,
-          badges_from_db: profile.badges,
-        },
-        step2_processed: {
-          signupNumber,
-          founderBadge,
-          founderBadgeEvaluated: founderBadge,
-          userBadges,
-          userBadgesLength: userBadges.length,
-          hasFirst151InBadges: userBadges.includes('first_151_trainer'),
-        },
-        step3_injection: {
-          shouldInjectFounderBadge,
-          reason: shouldInjectFounderBadge 
-            ? 'founder_badge=true AND first_151_trainer not in badges array'
-            : founderBadge 
-              ? 'first_151_trainer already in badges array'
-              : `founder_badge is not true (value: ${founderBadgeRaw}, type: ${typeof founderBadgeRaw})`,
-        },
-        step4_result: {
-          displayBadges,
-          displayBadgesLength: displayBadges.length,
-          willShowFounderBadge: displayBadges.includes('first_151_trainer'),
-        },
-        step5_final: {
-          finalDisplayBadges,
-          finalDisplayBadgesLength: finalDisplayBadges.length,
-          finalWillShowFounderBadge: finalDisplayBadges.includes('first_151_trainer'),
-          finalWillShowPokeverseBadge: finalDisplayBadges.includes('pokeverse_member'),
-        },
-        pokeverse_badge_logic: {
-          pokeverseBadgeRaw,
-          pokeverseBadge,
-          shouldInjectPokeverseBadge,
-          pokeverseInDisplayBadges: displayBadges.includes('pokeverse_member'),
-          pokeverseInFinalDisplayBadges: finalDisplayBadges.includes('pokeverse_member'),
-        },
-      })
-    }
-  }, [profile, signupNumber, founderBadge, founderBadgeRaw, userBadges, shouldInjectFounderBadge, displayBadges, finalDisplayBadges, pokeverseBadgeRaw, pokeverseBadge, shouldInjectPokeverseBadge])
   
   // Show loading state only on initial load (not during refreshes)
   // Check if we have any profile data at all
@@ -370,18 +288,6 @@ export function Achievements() {
   // CRITICAL FIX: Check finalDisplayBadges.length instead of userBadges.length
   // This ensures founder badge appears even if badges array is empty but founder_badge=true
   if (finalDisplayBadges.length === 0) {
-    if (isDev) {
-      console.log('[Achievements] ⚠️ No achievements to display (finalDisplayBadges is empty)', {
-        userBadges,
-        userBadgesLength: userBadges.length,
-        founderBadge,
-        founderBadgeRaw,
-        displayBadges,
-        displayBadgesLength: displayBadges.length,
-        finalDisplayBadges,
-        finalDisplayBadgesLength: finalDisplayBadges.length,
-      })
-    }
     return (
       <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh] py-12">
         <div className="relative">
@@ -404,9 +310,6 @@ export function Achievements() {
     .filter((badgeId): badgeId is BadgeId => {
       // Type guard to ensure badgeId is a valid BadgeId
       const isValid = validBadgeIds.includes(badgeId as BadgeId)
-      if (!isValid && isDev) {
-        console.log(`[Achievements] ⚠️ Skipping invalid badge ID: ${badgeId}`)
-      }
       return isValid
     })
     .map(badgeId => {
@@ -417,27 +320,8 @@ export function Achievements() {
           : new Date(), // For now, use current date for other badges
         signupNumber: badgeId === 'first_151_trainer' ? (signupNumber ?? undefined) : undefined,
       }
-      if (isDev) {
-        console.log(`[Achievements] ✅ Adding achievement to render list:`, {
-          badgeId: achievement.badgeId,
-          signupNumber: achievement.signupNumber,
-          unlockedDate: achievement.unlockedDate,
-        })
-      }
       return achievement
     })
-
-  // DEBUG: Final achievement list (dev only)
-  if (isDev) {
-    console.log('[Achievements] 🎯 Final achievements array to render:', {
-      count: achievements.length,
-      achievements: achievements.map(a => ({
-        badgeId: a.badgeId,
-        signupNumber: a.signupNumber,
-      })),
-      includesFounder: achievements.some(a => a.badgeId === 'first_151_trainer'),
-    })
-  }
 
   return (
     <div className="space-y-6">

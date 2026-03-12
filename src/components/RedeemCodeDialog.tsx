@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast'
 import { redeemCode } from '@/lib/supabase/redeemCodes'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { Loader2, Gift } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 interface RedeemCodeDialogProps {
   open: boolean
@@ -72,7 +73,7 @@ export function RedeemCodeDialog({ open, onOpenChange, onSuccess }: RedeemCodeDi
         })
       }
     } catch (error) {
-      console.error('[RedeemCodeDialog] Error redeeming code:', error)
+      logger.error('Error redeeming code')
       toast({
         title: 'Error',
         description: 'An unexpected error occurred. Please try again.',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { checkIsAdmin } from '@/lib/supabase/admin'
+import { logger } from '@/lib/logger'
 
 /**
  * Hook to check if the current user is an admin
@@ -36,7 +37,7 @@ export function useAdmin() {
         const adminStatus = await checkIsAdmin()
         setIsAdmin(adminStatus)
       } catch (error) {
-        console.error('[useAdmin] Error checking admin status:', error)
+        logger.error('Error checking admin status')
         setIsAdmin(false)
       } finally {
         setLoading(false)

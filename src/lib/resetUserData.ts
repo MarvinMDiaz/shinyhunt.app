@@ -20,6 +20,7 @@ import { getSupabaseUser } from './supabase/auth'
 import { storageService } from './storageService'
 import { loadStateSafely } from './persistence'
 import type { AppState } from '@/types'
+import { logger } from './logger'
 
 export interface ResetResult {
   success: boolean
@@ -60,13 +61,12 @@ export async function resetUserData(): Promise<ResetResult> {
 
       if (!huntsError && huntsData) {
         deletedHunts = huntsData.length
-        console.log(`[Reset] Deleted ${deletedHunts} hunts from Supabase`)
       } else if (huntsError && huntsError.code !== 'PGRST116') {
         // PGRST116 = table doesn't exist, which is OK
-        console.warn('[Reset] Error deleting hunts from Supabase:', huntsError)
+        logger.warn('Error deleting hunts from Supabase')
       }
     } catch (err) {
-      console.warn('[Reset] Supabase hunts table may not exist:', err)
+      logger.warn('Supabase hunts table may not exist')
     }
 
     // 2. Delete shiny_results from Supabase (if shiny_results table exists)
@@ -79,13 +79,12 @@ export async function resetUserData(): Promise<ResetResult> {
 
       if (!shinyError && shinyData) {
         deletedShinyResults = shinyData.length
-        console.log(`[Reset] Deleted ${deletedShinyResults} shiny_results from Supabase`)
       } else if (shinyError && shinyError.code !== 'PGRST116') {
         // PGRST116 = table doesn't exist, which is OK
-        console.warn('[Reset] Error deleting shiny_results from Supabase:', shinyError)
+        logger.warn('Error deleting shiny_results from Supabase')
       }
     } catch (err) {
-      console.warn('[Reset] Supabase shiny_results table may not exist:', err)
+      logger.warn('Supabase shiny_results table may not exist')
     }
 
     // 3. Reset badges/achievements in profiles table
@@ -99,12 +98,10 @@ export async function resetUserData(): Promise<ResetResult> {
         .eq('id', userId)
 
       if (profileError) {
-        console.warn('[Reset] Error resetting badges in profiles:', profileError)
-      } else {
-        console.log('[Reset] Reset badges and achievements in profiles table')
+        logger.warn('Error resetting badges in profiles')
       }
     } catch (err) {
-      console.warn('[Reset] Error updating profiles table:', err)
+      logger.warn('Error updating profiles table')
     }
 
     // 4. Clear localStorage hunt data
@@ -136,10 +133,8 @@ export async function resetUserData(): Promise<ResetResult> {
         }
       }
       keysToRemove.forEach(key => localStorage.removeItem(key))
-      
-      console.log(`[Reset] Cleared ${keysToRemove.length} hunt-related localStorage keys`)
     } catch (err) {
-      console.warn('[Reset] Error clearing localStorage:', err)
+      logger.warn('Error clearing localStorage')
     }
 
     // 5. Clear sessionStorage hunt data
@@ -164,10 +159,8 @@ export async function resetUserData(): Promise<ResetResult> {
         }
       }
       sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key))
-      
-      console.log(`[Reset] Cleared ${sessionKeysToRemove.length} hunt-related sessionStorage keys`)
     } catch (err) {
-      console.warn('[Reset] Error clearing sessionStorage:', err)
+      logger.warn('Error clearing sessionStorage')
     }
 
     // 6. Delete all hunts from localStorage via storageService
@@ -176,19 +169,16 @@ export async function resetUserData(): Promise<ResetResult> {
       for (const hunt of allHunts) {
         await storageService.deleteHunt(hunt.id)
       }
-      console.log(`[Reset] Deleted ${allHunts.length} hunts from localStorage`)
     } catch (err) {
-      console.warn('[Reset] Error deleting hunts from localStorage:', err)
+      logger.warn('Error deleting hunts from localStorage')
     }
 
     // 7. Reset current hunt ID via storageService
     try {
       await storageService.setCurrentHuntId(null)
     } catch (err) {
-      console.warn('[Reset] Error resetting current hunt ID:', err)
+      logger.warn('Error resetting current hunt ID')
     }
-
-    console.log('[Reset] User data reset completed successfully')
     
     // Helper function to reload state after reset
     const reloadState = async (): Promise<AppState> => {
@@ -202,7 +192,7 @@ export async function resetUserData(): Promise<ResetResult> {
       reloadState,
     }
   } catch (error) {
-    console.error('[Reset] Unexpected error during reset:', error)
+    logger.error('Unexpected error during reset')
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -222,16 +212,8 @@ export async function resetUserData(): Promise<ResetResult> {
  */
 export async function resetUserDataFromConsole(): Promise<void> {
   const result = await resetUserData()
-  if (result.success) {
-    console.log('✅ User data reset successful!')
-    console.log(`   - Deleted ${result.deletedHunts || 0} hunts from Supabase`)
-    console.log(`   - Deleted ${result.deletedShinyResults || 0} shiny results from Supabase`)
-    console.log('   - Cleared all hunts from localStorage')
-    console.log('   - Cleared localStorage/sessionStorage hunt caches')
-    console.log('   - Reset badges/achievements in profiles table')
-    console.log('\n⚠️  Please refresh the page to see the changes.')
-  } else {
-    console.error('❌ Reset failed:', result.error)
+  if (!result.success) {
+    logger.error('Reset failed')
   }
 }
 

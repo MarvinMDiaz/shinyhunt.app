@@ -11,6 +11,7 @@
  */
 
 import { Hunt, HistoryEntry } from '@/types'
+import { logger } from './logger'
 
 // Storage keys (for migration support)
 const LEGACY_HUNTS_KEY = 'shiny-hunter-app-state'
@@ -65,7 +66,7 @@ class LocalStorageHuntAdapter implements HuntStorageAdapter {
       const hunts = JSON.parse(stored)
       return hunts.map(this.deserializeHunt)
     } catch (error) {
-      console.error('Failed to load hunts:', error)
+      logger.error('Failed to load hunts')
       return []
     }
   }
@@ -173,7 +174,7 @@ class LocalStorageHuntAdapter implements HuntStorageAdapter {
       
       return null
     } catch (error) {
-      console.error('Failed to load legacy data:', error)
+      logger.error('Failed to load legacy data')
       return null
     }
   }
@@ -198,7 +199,7 @@ class LocalStorageHuntAdapter implements HuntStorageAdapter {
       const serialized = hunts.map(this.serializeHunt)
       localStorage.setItem(this.HUNTS_KEY, JSON.stringify(serialized))
     } catch (error) {
-      console.error('Failed to save hunts:', error)
+      logger.error('Failed to save hunts')
       throw error
     }
   }
@@ -255,7 +256,6 @@ export async function initializeStorageService(adapter?: HuntStorageAdapter): Pr
   if (adapter) {
     huntAdapter = adapter
     // adapterInitialized removed - not currently used
-    console.log('[StorageService] Initialized with provided adapter:', adapter.constructor.name)
     return
   }
 
@@ -269,15 +269,13 @@ export async function initializeStorageService(adapter?: HuntStorageAdapter): Pr
       const { SupabaseHuntAdapter } = await import('./supabase/hunts')
       huntAdapter = new SupabaseHuntAdapter()
       // adapterInitialized removed - not currently used
-      console.log('[StorageService] Initialized with Supabase adapter for user:', session.user.id)
     } else {
       // User not authenticated - use localStorage adapter
       huntAdapter = new LocalStorageHuntAdapter()
       // adapterInitialized removed - not currently used
-      console.log('[StorageService] Initialized with localStorage adapter (no auth)')
     }
   } catch (error) {
-    console.warn('[StorageService] Failed to check auth, using localStorage:', error)
+    logger.warn('Failed to check auth, using localStorage')
     huntAdapter = new LocalStorageHuntAdapter()
     // adapterInitialized removed - not currently used
   }
@@ -296,32 +294,22 @@ export function getCurrentAdapterType(): string {
 export const storageService = {
   // Hunt CRUD
   async getAllHunts(): Promise<Hunt[]> {
-    const adapterType = huntAdapter.constructor.name
-    console.log('[storageService] getAllHunts - using adapter:', adapterType)
     return huntAdapter.getAllHunts()
   },
 
   async getHuntById(id: string): Promise<Hunt | null> {
-    const adapterType = huntAdapter.constructor.name
-    console.log('[storageService] getHuntById - using adapter:', adapterType, 'huntId:', id)
     return huntAdapter.getHuntById(id)
   },
 
   async createHunt(hunt: Hunt): Promise<Hunt> {
-    const adapterType = huntAdapter.constructor.name
-    console.log('[storageService] createHunt - using adapter:', adapterType, 'huntId:', hunt.id)
     return huntAdapter.createHunt(hunt)
   },
 
   async updateHunt(id: string, updates: Partial<Hunt>): Promise<Hunt> {
-    const adapterType = huntAdapter.constructor.name
-    console.log('[storageService] updateHunt - using adapter:', adapterType, 'huntId:', id)
     return huntAdapter.updateHunt(id, updates)
   },
 
   async deleteHunt(id: string): Promise<void> {
-    const adapterType = huntAdapter.constructor.name
-    console.log('[storageService] deleteHunt - using adapter:', adapterType, 'huntId:', id)
     return huntAdapter.deleteHunt(id)
   },
 

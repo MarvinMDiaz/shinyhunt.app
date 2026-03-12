@@ -6,6 +6,7 @@ import { markFirst151PopupSeen } from '@/lib/auth'
 import { markFirst151PopupSeen as markPopupSeenSupabase } from '@/lib/supabase/auth'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { useNavigate } from 'react-router-dom'
+import { logger } from '@/lib/logger'
 
 interface First151CelebrationPopupProps {
   open: boolean
@@ -19,32 +20,18 @@ export function First151CelebrationPopup({ open, onClose }: First151CelebrationP
 
   useEffect(() => {
     if (open) {
-      console.log('[First151CelebrationPopup] Popup opened, marking as seen')
-      console.log('[First151CelebrationPopup] Current profile:', {
-        id: profile?.id,
-        signup_number: profile?.signup_number,
-        founder_badge: profile?.founder_badge,
-        founder_popup_shown: profile?.founder_popup_shown,
-      })
-      
       // Mark popup as seen in Supabase (persisted data)
       const markAsSeen = async () => {
         // Update Supabase profile
         if (profile?.id) {
-          console.log('[First151CelebrationPopup] Updating founder_popup_shown = true in Supabase')
           const result = await markPopupSeenSupabase(profile.id)
           
           if (result.error) {
-            console.error('[First151CelebrationPopup] Error marking popup as seen:', result.error)
-          } else {
-            console.log('[First151CelebrationPopup] Successfully marked popup as seen in Supabase')
+            logger.error('Error marking popup as seen')
           }
           
           // Refresh profile to update local state
           await refreshProfile()
-          console.log('[First151CelebrationPopup] Profile refreshed after marking popup as seen')
-        } else {
-          console.warn('[First151CelebrationPopup] No profile ID available, cannot mark popup as seen')
         }
         
         // Also update localStorage for backward compatibility (legacy)

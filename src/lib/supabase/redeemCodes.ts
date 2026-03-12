@@ -6,6 +6,7 @@
 
 import { supabase } from './client'
 import { getCurrentUser } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 export interface RedeemCode {
   code: string
@@ -46,27 +47,11 @@ export async function redeemCode(code: string): Promise<{
     const userId = user.id
 
     // 1. Query redeem_codes table
-    const isDev = import.meta.env.DEV
-    if (isDev) {
-      console.log('[redeemCode] Querying redeem_codes with normalizedCode:', normalizedCode)
-    }
-    
     const { data: redeemCodeData, error: codeError } = await supabase
       .from('redeem_codes')
       .select('*')
       .eq('code', normalizedCode)
       .single()
-
-    if (isDev) {
-      console.log('[redeemCode] Query result:', {
-        normalizedCode,
-        hasData: !!redeemCodeData,
-        hasError: !!codeError,
-        errorCode: codeError ? (codeError as any)?.code : null,
-        errorMessage: codeError ? codeError.message : null,
-        errorDetails: codeError ? codeError : null,
-      })
-    }
 
     // Handle query errors - distinguish between "not found" and other errors
     if (codeError) {
@@ -77,9 +62,7 @@ export async function redeemCode(code: string): Promise<{
         return { success: false, error: 'Invalid code' }
       } else {
         // Other error (RLS, network, etc.) - don't treat as invalid code
-        if (isDev) {
-          console.error('[redeemCode] Query error (not "not found"):', codeError)
-        }
+        logger.error('Query error validating redeem code')
         return { success: false, error: 'Unable to validate code right now. Please try again.' }
       }
     }
@@ -111,7 +94,7 @@ export async function redeemCode(code: string): Promise<{
       // But if there's an actual error (like RLS policy issue), log it
       const errorCode = (redemptionCheckError as any)?.code
       if (errorCode && errorCode !== 'PGRST116') {
-        console.error('[redeemCode] Error checking for existing redemption:', redemptionCheckError)
+        logger.error('Error checking for existing redemption')
         // Continue anyway - if we can't check, we'll try to insert and let that fail if duplicate
       }
     }
@@ -130,7 +113,7 @@ export async function redeemCode(code: string): Promise<{
       })
 
     if (insertError) {
-      console.error('[redeemCode] Error inserting redeemed code:', insertError)
+      logger.error('Error inserting redeemed code')
       return { success: false, error: 'Failed to redeem code. Please try again.' }
     }
 
@@ -141,7 +124,7 @@ export async function redeemCode(code: string): Promise<{
       .eq('code', normalizedCode)
 
     if (updateError) {
-      console.error('[redeemCode] Error updating code uses:', updateError)
+      logger.error('Error updating code uses')
       // Don't fail - redemption was successful, just log the error
     }
 
@@ -154,7 +137,7 @@ export async function redeemCode(code: string): Promise<{
         .eq('id', userId)
 
       if (badgeError) {
-        console.error('[redeemCode] Error unlocking badge:', badgeError)
+        logger.error('Error unlocking badge')
         return { success: false, error: 'Code redeemed but failed to unlock badge. Please contact support.' }
       }
 
@@ -163,7 +146,7 @@ export async function redeemCode(code: string): Promise<{
 
     return { success: true, badgeUnlocked }
   } catch (err) {
-    console.error('[redeemCode] Unexpected error:', err)
+    logger.error('Unexpected error redeeming code')
     return { success: false, error: 'An unexpected error occurred. Please try again.' }
   }
 }
