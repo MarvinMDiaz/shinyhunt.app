@@ -70,16 +70,14 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
       <CardHeader className="pb-3 pt-3">
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Static Stage with Floating Badge */}
-          <div className="relative w-full overflow-hidden" style={{ height: isPokeverseBadge ? '600px' : '320px' }}>
+          <div className="relative w-full overflow-hidden" style={{ height: '320px' }}>
             {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
             <div className="absolute inset-0 flex items-end justify-center pb-0 z-10">
               <img
                 key={`podium-${badgeId}-${podiumImagePath}`}
-                src={isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png'}
+                src={podiumImagePath}
                 alt={isPokeverseBadge ? "PokéVerse Podium" : "Trophy Podium"}
-                className={isPokeverseBadge 
-                  ? "w-full max-w-[105px] md:max-w-[126px] h-auto object-contain drop-shadow-lg"
-                  : "w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"}
+                className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
                 style={{ 
                   zIndex: 10,
                   display: 'block',
@@ -88,53 +86,31 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 }}
                 onError={(e) => {
                   console.error('[Achievements] Failed to load podium image:', {
-                    expectedPath: isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png',
+                    expectedPath: podiumImagePath,
                     actualSrc: e.currentTarget.src,
                     badgeId,
                     isPokeverseBadge,
-                    imageElement: e.currentTarget,
-                    computedStyle: window.getComputedStyle(e.currentTarget),
                   })
-                  // Don't fallback - let the error show so we can debug
-                }}
-                onLoad={(e) => {
-                  const img = e.currentTarget
-                  if (isDev && isPokeverseBadge) {
-                    console.log('[Achievements] PokéVerse podium image loaded successfully:', {
-                      path: isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png',
-                      imageWidth: img.naturalWidth,
-                      imageHeight: img.naturalHeight,
-                      displayWidth: img.width,
-                      displayHeight: img.height,
-                      computedDisplay: window.getComputedStyle(img).display,
-                      computedVisibility: window.getComputedStyle(img).visibility,
-                      computedOpacity: window.getComputedStyle(img).opacity,
-                    })
-                  }
                 }}
               />
               {/* Future: Founder number overlay will be positioned here on the podium nameplate */}
             </div>
             
             {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '120px' : '80px' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: '80px' }}>
               {!imageError ? (
                 <div className="relative">
                   <img
-                    src={isPokeverseBadge ? '/badges/dmvpokeverse.png' : badgeImagePath}
+                    src={badgeImagePath}
                     alt={badge.name}
-                    className={isPokeverseBadge 
-                      ? "w-[480px] h-[480px] md:w-[600px] md:h-[600px] object-contain drop-shadow-2xl filter relative z-10"
-                      : "w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"}
+                    className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"
                     style={{
                       animation: 'badge-float 3s ease-in-out infinite',
                     }}
                     onError={() => setImageError(true)}
                   />
                   {/* Shadow under badge */}
-                  <div className={isPokeverseBadge 
-                    ? "absolute top-full left-1/2 -translate-x-1/2 w-72 h-14 md:w-96 md:h-18 bg-black/20 blur-xl rounded-full -mt-4 z-0"
-                    : "absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0"} />
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0" />
                   
                   {/* Pokémon-style sparkles around badge - only for founder badge */}
                   {isFounderBadge && (
