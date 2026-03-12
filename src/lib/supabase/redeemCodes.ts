@@ -46,14 +46,47 @@ export async function redeemCode(code: string): Promise<{
     const userId = user.id
 
     // 1. Query redeem_codes table
+    const isDev = import.meta.env.DEV
+    if (isDev) {
+      console.log('[redeemCode] Querying redeem_codes with normalizedCode:', normalizedCode)
+    }
+    
     const { data: redeemCodeData, error: codeError } = await supabase
       .from('redeem_codes')
       .select('*')
       .eq('code', normalizedCode)
       .single()
 
-    if (codeError || !redeemCodeData) {
-      return { success: false, error: 'Invalid code. Please check and try again.' }
+    if (isDev) {
+      console.log('[redeemCode] Query result:', {
+        normalizedCode,
+        hasData: !!redeemCodeData,
+        hasError: !!codeError,
+        errorCode: codeError ? (codeError as any)?.code : null,
+        errorMessage: codeError ? codeError.message : null,
+        errorDetails: codeError ? codeError : null,
+      })
+    }
+
+    // Handle query errors - distinguish between "not found" and other errors
+    if (codeError) {
+      const errorCode = (codeError as any)?.code
+      // PGRST116 is the error code for "no rows returned" when using .single()
+      if (errorCode === 'PGRST116' || codeError.message?.includes('No rows')) {
+        // Code not found - this is an invalid code
+        return { success: false, error: 'Invalid code' }
+      } else {
+        // Other error (RLS, network, etc.) - don't treat as invalid code
+        if (isDev) {
+          console.error('[redeemCode] Query error (not "not found"):', codeError)
+        }
+        return { success: false, error: 'Unable to validate code right now. Please try again.' }
+      }
+    }
+
+    // No error but also no data (shouldn't happen with .single(), but defensive check)
+    if (!redeemCodeData) {
+      return { success: false, error: 'Invalid code' }
     }
 
     // 2. Validate code: check uses < max_uses
