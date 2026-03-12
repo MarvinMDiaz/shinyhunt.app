@@ -23,10 +23,11 @@ interface HuntDetailsProps {
   onUpdate: (updates: Partial<Hunt>) => void
   onSetCount?: (count: number) => void
   onDelete?: (id: string) => void
+  onAutoCreate?: (hunt: Hunt) => void
   themeId?: ThemeId
 }
 
-export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, themeId = 'default' }: HuntDetailsProps) {
+export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate, themeId = 'default' }: HuntDetailsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [goalInput, setGoalInput] = useState<string>(hunt.goal?.toString() || '')
@@ -37,6 +38,9 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, themeId = 'd
   const [regularImageFailed, setRegularImageFailed] = useState(false)
   const [shinyImageFailed, setShinyImageFailed] = useState(false)
   const [hydratedPokemon, setHydratedPokemon] = useState<Pokemon | null>(null)
+  
+  // Track if hunt was auto-created to prevent duplicates
+  const [huntAutoCreated, setHuntAutoCreated] = useState(false)
 
   // Check if hunt is completed (prevent editing)
   const isCompleted = hunt.status === 'completed' || hunt.completed === true
@@ -90,6 +94,51 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, themeId = 'd
     setRegularImageFailed(false)
     setShinyImageFailed(false)
   }, [hunt.pokemon?.id])
+
+  // Reset auto-created flag when hunt ID changes (new hunt)
+  useEffect(() => {
+    setHuntAutoCreated(false)
+  }, [hunt.id])
+
+  // Autosave: Create hunt automatically when game + pokemon are selected
+  useEffect(() => {
+    // Only trigger autosave if:
+    // 1. Hunt has both game and pokemon selected
+    // 2. Hunt hasn't been auto-created yet
+    // 3. Hunt is not completed
+    // 4. onAutoCreate callback is provided
+    if (
+      !isCompleted &&
+      hunt.gameId &&
+      hunt.pokemon &&
+      hunt.pokemon.name &&
+      !huntAutoCreated &&
+      onAutoCreate
+    ) {
+      // Check if hunt name needs auto-generation
+      const needsAutoName = !hunt.name || hunt.name.trim() === '' || hunt.name === 'New Hunt'
+      
+      if (needsAutoName) {
+        // Generate auto name from pokemon
+        const pokemonName = hunt.pokemon.displayName || hunt.pokemon.name
+        const autoName = `Shiny ${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}`
+        
+        // Mark as auto-created BEFORE updating to prevent duplicate triggers
+        setHuntAutoCreated(true)
+        
+        // Update hunt with auto-generated name
+        onUpdate({ name: autoName })
+        
+        // Notify parent component after a short delay to ensure state is updated
+        setTimeout(() => {
+          onAutoCreate({ ...hunt, name: autoName })
+        }, 100)
+      } else {
+        // Hunt already has a name, just mark as auto-created
+        setHuntAutoCreated(true)
+      }
+    }
+  }, [hunt.gameId, hunt.pokemon?.name, hunt.name, huntAutoCreated, isCompleted, onAutoCreate])
 
   // Get selected game
   const selectedGame = hunt.gameId ? getGameById(games, hunt.gameId) : null

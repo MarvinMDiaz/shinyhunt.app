@@ -601,10 +601,10 @@ export function TrackerApp() {
     })
   }
 
-  const createHunt = async (name: string) => {
+  const createHunt = async (name?: string) => {
     const newHunt: Hunt = {
       id: crypto.randomUUID(),
-      name,
+      name: name || 'New Hunt', // Allow creating hunt without name (will be auto-generated)
       createdAt: new Date(),
       startDate: new Date(),
       pokemon: null,
@@ -1115,10 +1115,13 @@ export function TrackerApp() {
             {activeHunts.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh]">
                 <h2 className="text-2xl font-bold">No Active Hunts</h2>
-                <p className="text-muted-foreground">Create your first hunt to get started!</p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <p className="text-muted-foreground">Select a game and Pokémon to start tracking!</p>
+                <Button onClick={() => {
+                  // Create a new hunt without name - will be auto-generated when game + pokemon are selected
+                  createHunt()
+                }}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Hunt
+                  Start New Hunt
                 </Button>
               </div>
             ) : currentHunt ? (
@@ -1133,6 +1136,13 @@ export function TrackerApp() {
                     onDelete={(id) => {
                       setDeleteHuntId(id)
                       setDeleteDialogOpen(true)
+                    }}
+                    onAutoCreate={(hunt) => {
+                      // Hunt was auto-created when game + pokemon were selected
+                      toast({
+                        title: 'Hunt created successfully',
+                        description: `${hunt.name} is now tracking your shiny hunt!`,
+                      })
                     }}
                     themeId={state.theme}
                   />
