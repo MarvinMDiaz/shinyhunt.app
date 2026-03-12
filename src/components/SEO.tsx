@@ -14,7 +14,9 @@ interface SEOProps {
 const SITE_NAME = 'ShinyHunt.app'
 const DEFAULT_DESCRIPTION = 'Free Pokémon shiny hunt tracker. Track shiny hunts, calculate odds, monitor progress, and build your shiny collection. The best shiny hunting tracker for all Pokémon generations.'
 const DEFAULT_OG_IMAGE = '/logo.png'
-const SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://shinyhunt.app'
+// Canonical domain: always use shinyhunt.app (not www) for SEO
+const CANONICAL_DOMAIN = 'https://shinyhunt.app'
+const SITE_URL = typeof window !== 'undefined' ? window.location.origin : CANONICAL_DOMAIN
 
 export function SEO({
   title,
@@ -27,8 +29,20 @@ export function SEO({
   nofollow = false,
 }: SEOProps) {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `Shiny Hunt Tracker | Pokémon Shiny Hunting Tracker | ${SITE_NAME}`
-  const url = canonicalUrl || (typeof window !== 'undefined' ? window.location.href : SITE_URL)
-  const imageUrl = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`
+  
+  // Build canonical URL: use canonical domain + current path
+  let url: string
+  if (canonicalUrl) {
+    url = canonicalUrl
+  } else if (typeof window !== 'undefined') {
+    // Replace current origin with canonical domain for SEO
+    const currentPath = window.location.pathname + window.location.search + window.location.hash
+    url = CANONICAL_DOMAIN + currentPath
+  } else {
+    url = CANONICAL_DOMAIN
+  }
+  
+  const imageUrl = ogImage.startsWith('http') ? ogImage : `${CANONICAL_DOMAIN}${ogImage}`
 
   const robotsContent = []
   if (noindex) robotsContent.push('noindex')
