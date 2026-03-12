@@ -1155,6 +1155,11 @@ export function TrackerApp() {
                   {/* Progress Panel */}
                   <ProgressPanelV3
                     hunt={currentHunt}
+                    activeHunts={activeHunts}
+                    currentHuntId={state.currentHuntId}
+                    onSelectHunt={(id) => {
+                      updateState({ currentHuntId: id })
+                    }}
                     onIncrement={incrementCount}
                     onUndo={undoLastAction}
                     onComplete={() => {

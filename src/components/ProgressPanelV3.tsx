@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Minus, RotateCcw, CheckCircle2, RotateCw } from 'lucide-react'
+import { Plus, Minus, RotateCcw, CheckCircle2, RotateCw, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemedCard } from '@/components/ThemedCard'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Label } from '@/components/ui/label'
 import { Hunt } from '@/types'
 import { ThemeId } from '@/lib/themes'
 import { ProgressColorPicker } from './ProgressColorPicker'
@@ -12,6 +19,9 @@ import { loadGames, getGameById } from '@/lib/games'
 
 interface ProgressPanelV3Props {
   hunt: Hunt
+  activeHunts?: Hunt[]
+  currentHuntId?: string | null
+  onSelectHunt?: (id: string) => void
   onIncrement: (delta: number) => void
   onUndo: () => void
   onComplete: () => void
@@ -45,6 +55,9 @@ function calculateAttemptsForProbability(odds: number, targetProbability: number
 
 export function ProgressPanelV3({
   hunt,
+  activeHunts = [],
+  currentHuntId,
+  onSelectHunt,
   onIncrement,
   onUndo,
   onComplete,
@@ -54,6 +67,7 @@ export function ProgressPanelV3({
 }: ProgressPanelV3Props) {
   const [holdInterval, setHoldInterval] = useState<NodeJS.Timeout | null>(null)
   const [gameGeneration, setGameGeneration] = useState<number | undefined>(undefined)
+  const [games, setGames] = useState<Awaited<ReturnType<typeof loadGames>>>([])
   
   // Load hotkey preferences
   const [incrementHotkey, setIncrementHotkey] = useState<string>(() => {
@@ -78,13 +92,26 @@ export function ProgressPanelV3({
     }
   }, [])
 
+  // Load games for hunt switcher
+  useEffect(() => {
+    async function loadGamesData() {
+      try {
+        const loadedGames = await loadGames()
+        setGames(loadedGames)
+      } catch (error) {
+        console.error('Failed to load games:', error)
+      }
+    }
+    loadGamesData()
+  }, [])
+
   // Load game generation for odds calculation
   useEffect(() => {
     async function loadGameGeneration() {
       if (hunt.gameId) {
         try {
-          const games = await loadGames()
-          const game = getGameById(games, hunt.gameId)
+          const loadedGames = await loadGames()
+          const game = getGameById(loadedGames, hunt.gameId)
           if (game) {
             setGameGeneration(game.generation)
           }
@@ -95,6 +122,18 @@ export function ProgressPanelV3({
     }
     loadGameGeneration()
   }, [hunt.gameId])
+
+  // Format hunt display name: "Pokémon — Game"
+  const getHuntDisplayName = (huntItem: Hunt): string => {
+    const pokemonName = huntItem.pokemon?.displayName || huntItem.pokemon?.name || 'Unknown'
+    const game = huntItem.gameId ? getGameById(games, huntItem.gameId) : null
+    const gameName = game?.name || 'No Game'
+    return `${pokemonName} — ${gameName}`
+  }
+
+  // Filter active hunts (exclude completed/archived)
+  const availableHunts = activeHunts.filter((h) => !h.archived && !h.completed)
+  const showHuntSwitcher = availableHunts.length > 1 && onSelectHunt
   
   // Track if user is typing in an input field or setting a hotkey
   const isTypingRef = useRef(false)
@@ -293,12 +332,55 @@ export function ProgressPanelV3({
     <div className="space-y-6">
       <ThemedCard themeId={themeId}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Progress</CardTitle>
-            <ProgressColorPicker
-              color={hunt.progressColor}
-              onChange={(color) => onUpdate({ progressColor: color })}
-            />
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <CardTitle>Progress</CardTitle>
+              <ProgressColorPicker
+                color={hunt.progressColor}
+                onChange={(color) => onUpdate({ progressColor: color })}
+              />
+            </div>
+            {/* Mobile Hunt Switcher */}
+            {showHuntSwitcher && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Current Hunt</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between h-11 min-h-[44px] text-sm px-3"
+                    >
+                      <span className="truncate">
+                        {getHuntDisplayName(hunt)}
+                      </span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[calc(100vw-3rem)] max-w-[400px]">
+                    {availableHunts.map((huntItem) => (
+                      <DropdownMenuItem
+                        key={huntItem.id}
+                        className="cursor-pointer min-h-[44px]"
+                        onClick={() => {
+                          if (onSelectHunt && huntItem.id !== currentHuntId) {
+                            onSelectHunt(huntItem.id)
+                          }
+                        }}
+                      >
+                        <div className="flex flex-col gap-0.5 w-full">
+                          <span className="font-medium">{getHuntDisplayName(huntItem)}</span>
+                          {huntItem.count > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              {huntItem.count.toLocaleString()} attempts
+                            </span>
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
