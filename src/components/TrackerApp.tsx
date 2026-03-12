@@ -901,7 +901,7 @@ export function TrackerApp() {
         onClose={() => setShowFirst151Popup(false)}
       />
       
-      <div className="min-h-screen bg-background relative">
+      <div className="min-h-screen bg-background relative overflow-x-hidden max-w-full">
       {/* Themed background and sparkles for tracker */}
       <TrackerBackground themeId={state.theme} />
       <FloatingSparkles goldCount={20} cyanCount={15} themeId={state.theme} />
@@ -1103,12 +1103,12 @@ export function TrackerApp() {
         </div>
       </header>
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 relative z-10" role="main">
+      <main className="max-w-[1400px] mx-auto px-2.5 sm:px-4 md:px-6 py-6 relative z-10 w-full box-border" role="main">
         <h1 className="sr-only">Shiny Hunt Tracker - Track Your Shiny Pokémon Journey</h1>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6" aria-label="Hunt tracking sections">
-            <TabsTrigger value="active">Active Hunts</TabsTrigger>
-            <TabsTrigger value="accomplished">Shiny Collection</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-full overflow-hidden">
+          <TabsList className="mb-6 w-full max-w-full" aria-label="Hunt tracking sections">
+            <TabsTrigger value="active" className="flex-1 min-w-0">Active Hunts</TabsTrigger>
+            <TabsTrigger value="accomplished" className="flex-1 min-w-0">Shiny Collection</TabsTrigger>
           </TabsList>
 
           <TabsContent value="active">
@@ -1125,10 +1125,10 @@ export function TrackerApp() {
                 </Button>
               </div>
             ) : currentHunt ? (
-              <div className="lg:grid lg:grid-cols-[420px_1fr] lg:gap-6 lg:w-full lg:max-w-none flex flex-col gap-6">
+              <div className="lg:grid lg:grid-cols-[420px_1fr] lg:gap-6 lg:w-full lg:max-w-none flex flex-col gap-6 w-full max-w-full box-border">
                 {/* Left Column - Hunt Details + Session Heat Map */}
                 {/* Mobile: order-2 (appears second), Desktop: order-1 (appears first) */}
-                <div className="order-2 lg:order-1 flex flex-col gap-6">
+                <div className="order-2 lg:order-1 flex flex-col gap-6 w-full max-w-full box-border">
                   <HuntDetails
                     hunt={currentHunt}
                     onUpdate={(updates) => updateHunt(currentHunt.id, updates)}
@@ -1151,7 +1151,7 @@ export function TrackerApp() {
 
                 {/* Right Column - Progress */}
                 {/* Mobile: order-1 (appears first), Desktop: order-2 (appears second) */}
-                <div className="order-1 lg:order-2 flex flex-col gap-6">
+                <div className="order-1 lg:order-2 flex flex-col gap-6 w-full max-w-full box-border">
                   {/* Progress Panel */}
                   <ProgressPanelV3
                     hunt={currentHunt}

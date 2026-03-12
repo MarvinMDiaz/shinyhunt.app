@@ -338,8 +338,8 @@ export function ProgressPanelV3({
   })
 
   return (
-    <div className="space-y-6">
-      <ThemedCard themeId={themeId}>
+    <div className="space-y-6 w-full max-w-full box-border">
+      <ThemedCard themeId={themeId} className="w-full max-w-full box-border">
         <CardHeader>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -366,7 +366,7 @@ export function ProgressPanelV3({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
-                    className="w-[calc(100vw-3rem)] max-w-[400px] z-50"
+                    className="w-[calc(100vw-2rem)] sm:w-[calc(100vw-3rem)] max-w-[400px] z-50"
                     align="start"
                   >
                     {availableHunts.map((huntItem) => (

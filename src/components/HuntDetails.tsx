@@ -164,7 +164,7 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
 
   return (
     <>
-      <ThemedCard themeId={themeId}>
+      <ThemedCard themeId={themeId} className="w-full max-w-full box-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Hunt Details</CardTitle>
