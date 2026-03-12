@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemedCard } from '@/components/ThemedCard'
-import { Calendar as CalendarIcon, ArrowRight, Sparkles } from 'lucide-react'
+import { Calendar as CalendarIcon, ArrowRight, Sparkles, ImageOff } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { Hunt, Pokemon } from '@/types'
 import { ThemeId } from '@/lib/themes'
@@ -15,6 +15,7 @@ import { GameSelector } from './GameSelector'
 import { getGameById, loadGamesSync } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { isPokemonAvailableInGame } from '@/data/pokemonGameAvailability'
+import { fetchPokemon } from '@/lib/pokeapi'
 
 interface HuntDetailsProps {
   hunt: Hunt
@@ -28,6 +29,11 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }:
   const [goalInput, setGoalInput] = useState<string>(hunt.goal?.toString() || '')
   const [countInput, setCountInput] = useState<string>(hunt.count?.toString() || '0')
   const [games] = useState<Game[]>(loadGamesSync())
+  
+  // Track image load failures and hydrated Pokemon data
+  const [regularImageFailed, setRegularImageFailed] = useState(false)
+  const [shinyImageFailed, setShinyImageFailed] = useState(false)
+  const [hydratedPokemon, setHydratedPokemon] = useState<Pokemon | null>(null)
 
   // Check if hunt is completed (prevent editing)
   const isCompleted = hunt.status === 'completed' || hunt.completed === true
@@ -42,8 +48,53 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }:
     setCountInput(hunt.count?.toString() || '0')
   }, [hunt.count])
 
+  // Hydrate Pokemon images if missing (e.g., loaded from Supabase)
+  useEffect(() => {
+    if (!hunt.pokemon) {
+      setHydratedPokemon(null)
+      setRegularImageFailed(false)
+      setShinyImageFailed(false)
+      return
+    }
+
+    // Check if Pokemon has valid image URLs
+    const hasValidImage = hunt.pokemon.image && hunt.pokemon.image.trim() !== ''
+    const hasValidShinyImage = hunt.pokemon.shinyImage && hunt.pokemon.shinyImage.trim() !== ''
+
+    // If images are missing, fetch from API
+    if (!hasValidImage || !hasValidShinyImage) {
+      fetchPokemon(hunt.pokemon.id, hunt.pokemon.formName)
+        .then((fetchedPokemon) => {
+          if (fetchedPokemon) {
+            setHydratedPokemon(fetchedPokemon)
+            setRegularImageFailed(false)
+            setShinyImageFailed(false)
+          }
+        })
+        .catch((error) => {
+          console.error('[HuntDetails] Failed to fetch Pokemon images:', error)
+        })
+    } else {
+      // Images already present, use them
+      setHydratedPokemon(null)
+      setRegularImageFailed(false)
+      setShinyImageFailed(false)
+    }
+  }, [hunt.pokemon?.id, hunt.pokemon?.formName])
+
+  // Reset image failure states when Pokemon changes
+  useEffect(() => {
+    setRegularImageFailed(false)
+    setShinyImageFailed(false)
+  }, [hunt.pokemon?.id])
+
   // Get selected game
   const selectedGame = hunt.gameId ? getGameById(games, hunt.gameId) : null
+  
+  // Get Pokemon with hydrated images if available
+  const displayPokemon = hydratedPokemon || hunt.pokemon
+  const regularImageSrc = displayPokemon?.image && displayPokemon.image.trim() !== '' ? displayPokemon.image : null
+  const shinyImageSrc = displayPokemon?.shinyImage && displayPokemon.shinyImage.trim() !== '' ? displayPokemon.shinyImage : null
 
   // Handle game change
   const handleGameChange = (gameId: string | null) => {
@@ -109,37 +160,53 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }:
               <div className="flex flex-col gap-2 max-w-full overflow-hidden">
                 {/* Pokémon Name and Dex Number */}
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold capitalize">{hunt.pokemon.displayName || hunt.pokemon.name}</p>
+                  <p className="text-sm font-semibold capitalize">{displayPokemon?.displayName || displayPokemon?.name || hunt.pokemon.name}</p>
                   <p className="text-xs text-muted-foreground">#{hunt.pokemon.id}</p>
                 </div>
                 
                 {/* Regular → Shiny Sprites */}
                 <div className="flex items-center gap-2 max-w-full">
                   {/* Regular Sprite */}
-                  <div className="relative w-[108px] h-[108px] flex-shrink-0 overflow-hidden">
-                    <img
-                      src={hunt.pokemon.image}
-                      alt={hunt.pokemon.name}
-                      className="w-full h-full object-contain"
-                      style={{ maxWidth: '108px', maxHeight: '108px' }}
-                    />
+                  <div className="relative w-[108px] h-[108px] flex-shrink-0 bg-muted/30 rounded-lg border border-border/30 flex items-center justify-center overflow-hidden">
+                    {regularImageSrc && !regularImageFailed ? (
+                      <img
+                        src={regularImageSrc}
+                        alt=""
+                        className="block w-full h-full object-contain"
+                        style={{ maxWidth: '108px', maxHeight: '108px' }}
+                        onError={() => {
+                          console.error('[HuntDetails] Failed to load regular sprite:', regularImageSrc)
+                          setRegularImageFailed(true)
+                        }}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageOff className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                    )}
                   </div>
                   
                   {/* Arrow */}
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   
                   {/* Shiny Sprite */}
-                  <div className="relative w-[108px] h-[108px] flex-shrink-0 overflow-hidden">
-                    {hunt.pokemon.shinyImage ? (
+                  <div className="relative w-[108px] h-[108px] flex-shrink-0 bg-muted/30 rounded-lg border border-border/30 flex items-center justify-center overflow-hidden">
+                    {shinyImageSrc && !shinyImageFailed ? (
                       <img
-                        src={hunt.pokemon.shinyImage}
-                        alt={`Shiny ${hunt.pokemon.name}`}
-                        className="w-full h-full object-contain"
+                        src={shinyImageSrc}
+                        alt=""
+                        className="block w-full h-full object-contain"
                         style={{ maxWidth: '108px', maxHeight: '108px' }}
+                        onError={() => {
+                          console.error('[HuntDetails] Failed to load shiny sprite:', shinyImageSrc)
+                          setShinyImageFailed(true)
+                        }}
+                        loading="lazy"
                       />
                     ) : (
-                      <div className="w-[108px] h-[108px] bg-muted/50 rounded flex items-center justify-center border border-dashed border-border/50">
-                        <Sparkles className="h-4 w-4 text-muted-foreground/40" />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-muted-foreground/40" />
                       </div>
                     )}
                   </div>

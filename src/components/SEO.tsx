@@ -16,7 +16,6 @@ const DEFAULT_DESCRIPTION = 'Free Pokémon shiny hunt tracker. Track shiny hunts
 const DEFAULT_OG_IMAGE = '/logo.png'
 // Canonical domain: use www.shinyhunt.app as primary production domain
 const CANONICAL_DOMAIN = 'https://www.shinyhunt.app'
-const SITE_URL = typeof window !== 'undefined' ? window.location.origin : CANONICAL_DOMAIN
 
 export function SEO({
   title,
