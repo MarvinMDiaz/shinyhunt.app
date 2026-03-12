@@ -17,6 +17,7 @@ export interface Profile {
   founder_popup_shown?: boolean | null // Whether founder popup has been shown
   badges?: string[] | null
   has_seen_first_151_popup?: boolean | null // Legacy field - use founder_popup_shown instead
+  pokeverse_member?: boolean | null // PokéVerse badge flag
   [key: string]: any
 }
 

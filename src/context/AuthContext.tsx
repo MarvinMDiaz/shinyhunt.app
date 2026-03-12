@@ -54,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Google sign-in
   const signInWithGoogle = async (): Promise<void> => {
-    // Get canonical redirect URL: prefer www.shinyhunt.app in production
+    // Get redirect URL: use window.location.origin for local/test environments, production domain only for production
     const getRedirectUrl = (): string => {
       // Allow override via environment variable
       const envRedirect = import.meta.env.VITE_AUTH_REDIRECT_URL
@@ -66,18 +66,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return 'https://www.shinyhunt.app'
       }
       
-      const host = window.location.hostname
-      const isLocal = host === 'localhost' || host === '127.0.0.1'
-      const isRailwayPreview = host.includes('up.railway.app')
+      const hostname = window.location.hostname
+      const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0'
+      const isProduction = hostname === 'www.shinyhunt.app' || hostname === 'shinyhunt.app'
       
-      // In production, use canonical domain (www.shinyhunt.app)
-      if (!isLocal && !isRailwayPreview) {
-        const currentPath = window.location.pathname + window.location.search + window.location.hash
-        return 'https://www.shinyhunt.app' + currentPath
+      // In local development or test environments, use current origin
+      if (isLocal || !isProduction) {
+        return window.location.origin
       }
       
-      // In dev/preview, use current origin
-      return window.location.origin
+      // In production, use canonical domain
+      return 'https://www.shinyhunt.app'
     }
     
     const { error } = await supabase.auth.signInWithOAuth({

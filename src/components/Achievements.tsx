@@ -16,7 +16,10 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
   const badge = getUserBadges([badgeId])[0]
   if (!badge) return null
 
-  const badgeImagePath = `/badges/badge.png`
+  // Use custom image for PokéVerse badge, default for others
+  const badgeImagePath = badgeId === 'pokeverse_member' 
+    ? `/badges/dmvpokeverse.png`
+    : `/badges/badge.png`
   const [imageError, setImageError] = useState(false)
 
   // Determine rarity/status label based on badge type
@@ -26,6 +29,8 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
         return { text: 'Founder Badge', variant: 'default' }
       case 'full_dex_completion':
         return { text: 'Legendary Achievement', variant: 'default' }
+      case 'pokeverse_member':
+        return { text: 'Community Badge', variant: 'default' }
       case 'hundred_shiny_hunts':
       case 'ten_thousand_attempts':
         return { text: 'Milestone Badge', variant: 'secondary' }
@@ -36,6 +41,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
 
   const rarityLabel = getRarityLabel(badgeId)
   const isFounderBadge = badgeId === 'first_151_trainer'
+  const isPokeverseBadge = badgeId === 'pokeverse_member'
 
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-card via-card/98 to-card/95 border-2 border-yellow-500/20 hover:border-yellow-500/50 hover:shadow-2xl hover:shadow-yellow-500/20 transition-all duration-500 group">
@@ -207,6 +213,13 @@ export function Achievements() {
                        (typeof founderBadgeRaw === 'number' && founderBadgeRaw === 1) || 
                        (typeof founderBadgeRaw === 'string' && founderBadgeRaw === '1')
   
+  // Check for PokéVerse badge (from pokeverse_member field)
+  const pokeverseBadgeRaw = profile?.pokeverse_member
+  const pokeverseBadge = pokeverseBadgeRaw === true || 
+                         (typeof pokeverseBadgeRaw === 'string' && pokeverseBadgeRaw === 'true') || 
+                         (typeof pokeverseBadgeRaw === 'number' && pokeverseBadgeRaw === 1) || 
+                         (typeof pokeverseBadgeRaw === 'string' && pokeverseBadgeRaw === '1')
+  
   // DEBUG: Log raw profile values
   useEffect(() => {
     if (profile) {
@@ -227,14 +240,25 @@ export function Achievements() {
   // CRITICAL: If user has founder_badge = true, ALWAYS ensure first_151_trainer is in badges array for display
   // This is the source of truth - founder_badge from Supabase determines if badge should show
   const shouldInjectFounderBadge = founderBadge && !userBadges.includes('first_151_trainer')
-  const displayBadges = shouldInjectFounderBadge
+  let displayBadges = shouldInjectFounderBadge
     ? [...userBadges, 'first_151_trainer']
     : userBadges
   
+  // CRITICAL: If user has pokeverse_member = true, ALWAYS ensure pokeverse_member is in badges array for display
+  const shouldInjectPokeverseBadge = pokeverseBadge && !displayBadges.includes('pokeverse_member')
+  displayBadges = shouldInjectPokeverseBadge
+    ? [...displayBadges, 'pokeverse_member']
+    : displayBadges
+  
   // Force inject if founderBadge is true but somehow not in displayBadges (defensive check)
-  const finalDisplayBadges = founderBadge && !displayBadges.includes('first_151_trainer')
+  let finalDisplayBadges = founderBadge && !displayBadges.includes('first_151_trainer')
     ? [...displayBadges, 'first_151_trainer']
     : displayBadges
+  
+  // Force inject if pokeverseBadge is true but somehow not in finalDisplayBadges (defensive check)
+  finalDisplayBadges = pokeverseBadge && !finalDisplayBadges.includes('pokeverse_member')
+    ? [...finalDisplayBadges, 'pokeverse_member']
+    : finalDisplayBadges
   
   // Debug logging - detailed breakdown
   useEffect(() => {

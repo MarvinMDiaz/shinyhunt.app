@@ -29,6 +29,8 @@ import {
 } from '@/lib/adminData'
 import { formatDate } from '@/lib/utils'
 import { SEO } from '@/components/SEO'
+import { BadgeDisplay } from '@/components/BadgeDisplay'
+import type { BadgeId } from '@/lib/auth'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null)
@@ -387,16 +389,27 @@ export function AdminDashboard() {
                           key={user.userId}
                           className="flex items-center justify-between p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-muted-foreground w-6">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
                               #{index + 1}
                             </span>
-                            <div>
-                              <p className="font-semibold">{user.userName}</p>
-                              <p className="text-xs text-muted-foreground">{user.userEmail}</p>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold truncate">{user.userName}</p>
+                              <p className="text-xs text-muted-foreground truncate">{user.userEmail}</p>
+                              {user.metadata?.badges && Array.isArray(user.metadata.badges) && user.metadata.badges.length > 0 && (
+                                <div className="mt-1">
+                                  <BadgeDisplay 
+                                    badgeIds={(user.metadata.badges as BadgeId[]).filter((b): b is BadgeId => 
+                                      ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts', 'pokeverse_member'].includes(b)
+                                    )} 
+                                    showTooltip={true}
+                                    className="flex-wrap"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right shrink-0 ml-2">
                             <p className="text-xs text-muted-foreground">Completed</p>
                             <p className="font-bold">{user.value}</p>
                           </div>
@@ -425,18 +438,29 @@ export function AdminDashboard() {
                           key={user.userId}
                           className="flex items-center justify-between p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-muted-foreground w-6">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
                               #{index + 1}
                             </span>
-                            <div>
-                              <p className="font-semibold">{user.userName}</p>
-                              <p className="text-xs text-muted-foreground">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold truncate">{user.userName}</p>
+                              <p className="text-xs text-muted-foreground truncate">
                                 {user.metadata?.pokemon || 'Unknown Pokémon'}
                               </p>
+                              {user.metadata?.badges && Array.isArray(user.metadata.badges) && user.metadata.badges.length > 0 && (
+                                <div className="mt-1">
+                                  <BadgeDisplay 
+                                    badgeIds={(user.metadata.badges as BadgeId[]).filter((b): b is BadgeId => 
+                                      ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts', 'pokeverse_member'].includes(b)
+                                    )} 
+                                    showTooltip={true}
+                                    className="flex-wrap"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right shrink-0 ml-2">
                             <p className="text-xs text-muted-foreground">Encounters</p>
                             <p className="font-bold">{user.value.toLocaleString()}</p>
                           </div>

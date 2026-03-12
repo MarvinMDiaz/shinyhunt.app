@@ -484,7 +484,7 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, display_name, username')
+      .select('id, email, display_name, username, badges, pokeverse_member')
       .in('id', topUserIds)
 
     if (profilesError) {
@@ -493,8 +493,8 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
     }
 
     // Build leaderboard entries
-    const profileMap = new Map<string, { id: string; email: string; display_name?: string; username?: string }>()
-    ;(profiles || []).forEach((p: { id: string; email: string; display_name?: string; username?: string }) => {
+    const profileMap = new Map<string, { id: string; email: string; display_name?: string; username?: string; badges?: string[] | null; pokeverse_member?: boolean | null }>()
+    ;(profiles || []).forEach((p: { id: string; email: string; display_name?: string; username?: string; badges?: string[] | null; pokeverse_member?: boolean | null }) => {
       profileMap.set(p.id, p)
     })
 
@@ -502,6 +502,12 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
       .map(userId => {
         const profile = profileMap.get(userId)
         const completions = completionCounts.get(userId) || 0
+        // Get badges array, including pokeverse_member if true
+        const badges = Array.isArray(profile?.badges) ? profile.badges : []
+        const hasPokeverseBadge = profile?.pokeverse_member === true || profile?.pokeverse_member === 'true'
+        const allBadges = hasPokeverseBadge && !badges.includes('pokeverse_member')
+          ? [...badges, 'pokeverse_member']
+          : badges
         return {
           userId,
           userName: profile?.display_name || profile?.username || profile?.email?.split('@')[0] || 'User',
@@ -509,6 +515,7 @@ export async function getTopUsersByCompletions(limit: number = 10): Promise<User
           value: completions,
           metadata: {
             profileId: userId,
+            badges: allBadges,
           },
         }
       })
@@ -563,7 +570,7 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
     const userIds = topUsers.map(([userId]) => userId)
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, display_name, username')
+      .select('id, email, display_name, username, badges, pokeverse_member')
       .in('id', userIds)
 
     if (profilesError) {
@@ -571,13 +578,19 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
       throw profilesError
     }
 
-    const profileMap = new Map<string, { id: string; email: string; display_name?: string; username?: string }>()
-    ;(profiles || []).forEach((p: { id: string; email: string; display_name?: string; username?: string }) => {
+    const profileMap = new Map<string, { id: string; email: string; display_name?: string; username?: string; badges?: string[] | null; pokeverse_member?: boolean | null }>()
+    ;(profiles || []).forEach((p: { id: string; email: string; display_name?: string; username?: string; badges?: string[] | null; pokeverse_member?: boolean | null }) => {
       profileMap.set(p.id, p)
     })
 
     return topUsers.map(([userId, huntData]) => {
       const profile = profileMap.get(userId)
+      // Get badges array, including pokeverse_member if true
+      const badges = Array.isArray(profile?.badges) ? profile.badges : []
+      const hasPokeverseBadge = profile?.pokeverse_member === true || profile?.pokeverse_member === 'true'
+      const allBadges = hasPokeverseBadge && !badges.includes('pokeverse_member')
+        ? [...badges, 'pokeverse_member']
+        : badges
       return {
         userId,
         userName: profile?.display_name || profile?.username || profile?.email?.split('@')[0] || 'User',
@@ -586,6 +599,7 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
         metadata: {
           pokemon: huntData.pokemon,
           profileId: userId,
+          badges: allBadges,
         },
       }
     })

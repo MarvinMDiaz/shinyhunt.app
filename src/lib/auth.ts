@@ -9,7 +9,7 @@
  * for backward compatibility with existing hunt data storage.
  */
 
-export type BadgeId = 'first_151_trainer' | 'hundred_shiny_hunts' | 'full_dex_completion' | 'gen_1_master' | 'ten_thousand_attempts'
+export type BadgeId = 'first_151_trainer' | 'hundred_shiny_hunts' | 'full_dex_completion' | 'gen_1_master' | 'ten_thousand_attempts' | 'pokeverse_member'
 
 export interface Badge {
   id: BadgeId
@@ -48,6 +48,12 @@ export const BADGE_DEFINITIONS: Record<BadgeId, Badge> = {
     name: '10,000 Attempts Club',
     description: 'Reached 10,000 total attempts across all hunts.',
     icon: '💪',
+  },
+  pokeverse_member: {
+    id: 'pokeverse_member',
+    name: 'DMV PokéVerse Member',
+    description: 'Proud supporter of the DMV PokéVerse community.',
+    icon: '🌟',
   },
 }
 

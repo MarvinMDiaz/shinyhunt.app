@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, LogOut, Camera, Mail, UserCircle, Award, Loader2 } from 'lucide-react'
+import { User, LogOut, Camera, Mail, UserCircle, Award, Loader2, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,7 @@ import { updateProfileAvatar } from '@/lib/supabase/auth'
 import { useAdmin } from '@/hooks/useAdmin'
 import { Settings } from 'lucide-react'
 import type { BadgeId } from '@/lib/auth'
+import { RedeemCodeDialog } from './RedeemCodeDialog'
 
 // Separator component - simple divider
 const Separator = () => <div className="border-t border-border my-4" />
@@ -33,6 +34,7 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
   )
   const [isUpdatingName, setIsUpdatingName] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [redeemDialogOpen, setRedeemDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Update display name when profile changes - only use display_name, never username
@@ -206,8 +208,12 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
               </p>
             </div>
             <BadgeDisplay badgeIds={(profile.badges || []).filter((b): b is BadgeId => 
-              ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts'].includes(b)
+              ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts', 'pokeverse_member'].includes(b)
             )} />
+            {/* Also check pokeverse_member field for badge display */}
+            {profile?.pokeverse_member && !(profile.badges || []).includes('pokeverse_member') && (
+              <BadgeDisplay badgeIds={['pokeverse_member']} />
+            )}
           </div>
           <Separator />
         </>
@@ -365,6 +371,29 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
 
       <Separator />
 
+      {/* Redeem Code Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+            <Gift className="h-5 w-5 text-primary" />
+            Redeem Code
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Unlock badges and rewards with a redeem code
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setRedeemDialogOpen(true)}
+          className="w-full"
+        >
+          <Gift className="h-4 w-4 mr-2" />
+          Redeem Code
+        </Button>
+      </div>
+
+      <Separator />
+
       {/* Admin Section - Only visible to admins */}
       {!loadingAdmin && isAdmin === true && (
         <>
@@ -405,6 +434,16 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
           Sign Out
         </Button>
       </div>
+
+      {/* Redeem Code Dialog */}
+      <RedeemCodeDialog
+        open={redeemDialogOpen}
+        onOpenChange={setRedeemDialogOpen}
+        onSuccess={() => {
+          // Refresh profile to show new badge
+          refreshProfile(true)
+        }}
+      />
     </div>
   )
 }
