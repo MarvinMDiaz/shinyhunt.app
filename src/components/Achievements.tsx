@@ -44,6 +44,9 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
   const rarityLabel = getRarityLabel(badgeId)
   const isFounderBadge = badgeId === 'first_151_trainer'
   const isPokeverseBadge = badgeId === 'pokeverse_member'
+  
+  // Podium image path
+  const podiumImagePath = isPokeverseBadge ? "/badges/podium-pokeverse.png" : "/badges/podium.png"
 
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-card via-card/98 to-card/95 border-2 border-yellow-500/20 hover:border-yellow-500/50 hover:shadow-2xl hover:shadow-yellow-500/20 transition-all duration-500 group">
@@ -58,9 +61,16 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
             <div className="absolute inset-0 flex items-end justify-center pb-0">
               <img
-                src={isPokeverseBadge ? "/badges/podium-pokeverse.png" : "/badges/podium.png"}
+                src={podiumImagePath}
                 alt={isPokeverseBadge ? "PokéVerse Podium" : "Trophy Podium"}
                 className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
+                onError={(e) => {
+                  console.error('[Achievements] Failed to load podium image:', podiumImagePath, e)
+                  // Fallback to regular podium if PokéVerse podium fails
+                  if (isPokeverseBadge && e.currentTarget.src !== "/badges/podium.png") {
+                    e.currentTarget.src = "/badges/podium.png"
+                  }
+                }}
               />
               {/* Future: Founder number overlay will be positioned here on the podium nameplate */}
             </div>
