@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Trophy, ArrowLeft, Search, Sparkles, Star, CheckCircle2 } from 'lucide-react'
+import { Trophy, ArrowLeft, Search, Sparkles, Star, CheckCircle2, Trash2 } from 'lucide-react'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Hunt, Pokemon } from '@/types'
 import { formatDate, formatOdds } from '@/lib/utils'
 import { ShinyDex } from './ShinyDex'
@@ -17,6 +18,7 @@ import { fetchPokemon } from '@/lib/pokeapi'
 interface AccomplishedViewProps {
   hunts: Hunt[]
   onMoveToActive: (id: string) => void
+  onDeleteHunt?: (id: string) => void
   onSelectHunt?: (id: string) => void
   viewMode?: 'trophy-case' | 'shiny-dex'
 }
@@ -24,7 +26,9 @@ interface AccomplishedViewProps {
 export function AccomplishedView({
   hunts,
   onMoveToActive,
+  onDeleteHunt,
 }: AccomplishedViewProps) {
+  const [deleteHuntId, setDeleteHuntId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [games, setGames] = useState<Game[]>([])
   const { profile } = useUserProfile()
@@ -264,6 +268,25 @@ export function AccomplishedView({
                 </div>
               </div>
 
+              {/* Delete button - top left, mobile-friendly */}
+              {onDeleteHunt && (
+                <div className="absolute top-3 left-3 z-20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-11 w-11 min-h-[44px] min-w-[44px] text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setDeleteHuntId(hunt.id)
+                    }}
+                    aria-label={`Delete ${hunt.name}`}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
+
               {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
@@ -400,11 +423,11 @@ export function AccomplishedView({
                 </div>
 
                 {/* Actions - Improved button styling */}
-                <div className="flex gap-2 pt-1 relative z-10">
+                <div className="flex flex-col sm:flex-row gap-2 pt-1 relative z-10">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full hover:bg-primary/10 hover:border-primary/50 transition-colors relative z-10"
+                    className="w-full sm:flex-1 hover:bg-primary/10 hover:border-primary/50 transition-colors relative z-10"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -416,6 +439,22 @@ export function AccomplishedView({
                     <ArrowLeft className="h-4 w-4 mr-1.5" />
                     Move to Active
                   </Button>
+                  {onDeleteHunt && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto min-h-[44px] text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-colors relative z-10"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setDeleteHuntId(hunt.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1.5 sm:mr-0 sm:hidden" />
+                      <span className="sm:hidden">Delete</span>
+                      <Trash2 className="h-4 w-4 hidden sm:inline" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -443,6 +482,36 @@ export function AccomplishedView({
       <TabsContent value="achievements" className="space-y-6">
         <Achievements />
       </TabsContent>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteHuntId && onDeleteHunt && (
+        <Dialog open={!!deleteHuntId} onOpenChange={(open) => !open && setDeleteHuntId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Hunt</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete "{hunts.find((h) => h.id === deleteHuntId)?.name || 'this hunt'}"? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteHuntId(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (deleteHuntId) {
+                    onDeleteHunt(deleteHuntId)
+                    setDeleteHuntId(null)
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </Tabs>
   )
 }

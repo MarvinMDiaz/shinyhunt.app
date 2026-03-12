@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemedCard } from '@/components/ThemedCard'
-import { Calendar as CalendarIcon, ArrowRight, Sparkles, ImageOff } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Calendar as CalendarIcon, ArrowRight, Sparkles, ImageOff, Trash2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { Hunt, Pokemon } from '@/types'
 import { ThemeId } from '@/lib/themes'
@@ -21,10 +22,12 @@ interface HuntDetailsProps {
   hunt: Hunt
   onUpdate: (updates: Partial<Hunt>) => void
   onSetCount?: (count: number) => void
+  onDelete?: (id: string) => void
   themeId?: ThemeId
 }
 
-export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }: HuntDetailsProps) {
+export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, themeId = 'default' }: HuntDetailsProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [goalInput, setGoalInput] = useState<string>(hunt.goal?.toString() || '')
   const [countInput, setCountInput] = useState<string>(hunt.count?.toString() || '0')
@@ -111,10 +114,24 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }:
   }
 
   return (
-    <ThemedCard themeId={themeId}>
-      <CardHeader>
-        <CardTitle>Hunt Details</CardTitle>
-      </CardHeader>
+    <>
+      <ThemedCard themeId={themeId}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Hunt Details</CardTitle>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-11 w-11 min-h-[44px] min-w-[44px] text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setDeleteDialogOpen(true)}
+                aria-label={`Delete ${hunt.name}`}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+        </CardHeader>
       <CardContent className="space-y-6">
         {/* Game Selection - First Field */}
         <div className="space-y-2">
@@ -385,5 +402,34 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, themeId = 'default' }:
 
       </CardContent>
     </ThemedCard>
+
+    {/* Delete Confirmation Dialog */}
+    {onDelete && (
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Hunt</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{hunt.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                onDelete(hunt.id)
+                setDeleteDialogOpen(false)
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   )
 }

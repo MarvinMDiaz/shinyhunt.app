@@ -1130,6 +1130,10 @@ export function TrackerApp() {
                     hunt={currentHunt}
                     onUpdate={(updates) => updateHunt(currentHunt.id, updates)}
                     onSetCount={setCount}
+                    onDelete={(id) => {
+                      setDeleteHuntId(id)
+                      setDeleteDialogOpen(true)
+                    }}
                     themeId={state.theme}
                   />
                   
@@ -1170,6 +1174,10 @@ export function TrackerApp() {
             <AccomplishedView
               hunts={state.hunts}
               onMoveToActive={uncompleteHunt}
+              onDeleteHunt={(id) => {
+                setDeleteHuntId(id)
+                setDeleteDialogOpen(true)
+              }}
             />
           </TabsContent>
         </Tabs>
