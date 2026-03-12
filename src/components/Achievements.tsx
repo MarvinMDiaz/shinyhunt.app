@@ -19,9 +19,10 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
   if (!badge) return null
 
   // Use custom image for PokéVerse badge, default for others
+  // Badge orb: /badges/dmvpokeverse.png for PokéVerse badge
   const badgeImagePath = badgeId === 'pokeverse_member' 
-    ? `/badges/dmvpokeverse.png`
-    : `/badges/badge.png`
+    ? '/badges/dmvpokeverse.png'
+    : '/badges/badge.png'
   const [imageError, setImageError] = useState(false)
 
   // Determine rarity/status label based on badge type
@@ -46,7 +47,8 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
   const isPokeverseBadge = badgeId === 'pokeverse_member'
   
   // Podium image path - use PokéVerse podium for PokéVerse badge
-  const podiumImagePath = isPokeverseBadge ? "/badges/podium-pokeverse.png" : "/badges/podium.png"
+  // Podium: /badges/podium-pokeverse.png for PokéVerse badge
+  const podiumImagePath = isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png'
   
   // Debug logging (dev only)
   if (isDev) {
@@ -73,7 +75,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             <div className="absolute inset-0 flex items-end justify-center pb-0 z-10">
               <img
                 key={`podium-${badgeId}-${podiumImagePath}`}
-                src={podiumImagePath}
+                src={isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png'}
                 alt={isPokeverseBadge ? "PokéVerse Podium" : "Trophy Podium"}
                 className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
                 style={{ 
@@ -84,7 +86,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 }}
                 onError={(e) => {
                   console.error('[Achievements] Failed to load podium image:', {
-                    expectedPath: podiumImagePath,
+                    expectedPath: isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png',
                     actualSrc: e.currentTarget.src,
                     badgeId,
                     isPokeverseBadge,
@@ -97,7 +99,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                   const img = e.currentTarget
                   if (isDev && isPokeverseBadge) {
                     console.log('[Achievements] PokéVerse podium image loaded successfully:', {
-                      path: podiumImagePath,
+                      path: isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png',
                       imageWidth: img.naturalWidth,
                       imageHeight: img.naturalHeight,
                       displayWidth: img.width,
@@ -117,7 +119,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
               {!imageError ? (
                 <div className="relative">
                   <img
-                    src={badgeImagePath}
+                    src={isPokeverseBadge ? '/badges/dmvpokeverse.png' : badgeImagePath}
                     alt={badge.name}
                     className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"
                     style={{
