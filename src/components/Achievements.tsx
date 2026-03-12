@@ -55,12 +55,12 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Different layout for PokéVerse badge */}
           {isPokeverseBadge ? (
-            <div className="w-full flex flex-col items-center">
+            <div className="w-full flex flex-col items-center py-8">
               {!imageError ? (
                 <img
                   src={badgeImagePath}
                   alt={badge.name}
-                  className="w-32 h-32 md:w-40 md:h-40 object-contain block"
+                  className="w-64 h-64 md:w-80 md:h-80 object-contain block"
                   style={{
                     objectFit: 'contain',
                     margin: '0 auto 16px auto',
@@ -70,13 +70,13 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 />
               ) : (
                 <div 
-                  className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center"
+                  className="w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center"
                   style={{
                     margin: '0 auto 16px auto',
                     display: 'block',
                   }}
                 >
-                  <span className="text-5xl md:text-6xl">{badge.icon || '✨'}</span>
+                  <span className="text-7xl md:text-8xl">{badge.icon || '✨'}</span>
                 </div>
               )}
             </div>
