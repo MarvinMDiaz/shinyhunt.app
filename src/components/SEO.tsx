@@ -14,8 +14,8 @@ interface SEOProps {
 const SITE_NAME = 'ShinyHunt.app'
 const DEFAULT_DESCRIPTION = 'Free Pokémon shiny hunt tracker. Track shiny hunts, calculate odds, monitor progress, and build your shiny collection. The best shiny hunting tracker for all Pokémon generations.'
 const DEFAULT_OG_IMAGE = '/logo.png'
-// Canonical domain: always use shinyhunt.app (not www) for SEO
-const CANONICAL_DOMAIN = 'https://shinyhunt.app'
+// Canonical domain: use www.shinyhunt.app as primary production domain
+const CANONICAL_DOMAIN = 'https://www.shinyhunt.app'
 const SITE_URL = typeof window !== 'undefined' ? window.location.origin : CANONICAL_DOMAIN
 
 export function SEO({

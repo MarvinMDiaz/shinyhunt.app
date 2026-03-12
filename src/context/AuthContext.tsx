@@ -54,20 +54,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Google sign-in
   const signInWithGoogle = async (): Promise<void> => {
-    // Get canonical redirect URL: prefer shinyhunt.app in production
+    // Get canonical redirect URL: prefer www.shinyhunt.app in production
     const getRedirectUrl = (): string => {
+      // Allow override via environment variable
+      const envRedirect = import.meta.env.VITE_AUTH_REDIRECT_URL
+      if (envRedirect) {
+        return envRedirect
+      }
+      
       if (typeof window === 'undefined') {
-        return 'https://shinyhunt.app'
+        return 'https://www.shinyhunt.app'
       }
       
       const host = window.location.hostname
       const isLocal = host === 'localhost' || host === '127.0.0.1'
       const isRailwayPreview = host.includes('up.railway.app')
       
-      // In production (shinyhunt.app or www.shinyhunt.app), use canonical domain
+      // In production, use canonical domain (www.shinyhunt.app)
       if (!isLocal && !isRailwayPreview) {
         const currentPath = window.location.pathname + window.location.search + window.location.hash
-        return 'https://shinyhunt.app' + currentPath
+        return 'https://www.shinyhunt.app' + currentPath
       }
       
       // In dev/preview, use current origin
