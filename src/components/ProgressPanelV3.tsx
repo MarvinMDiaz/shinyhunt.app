@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Minus, RotateCcw, CheckCircle2, RotateCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemedCard } from '@/components/ThemedCard'
 import { Hunt } from '@/types'
@@ -14,7 +13,6 @@ import { loadGames, getGameById } from '@/lib/games'
 interface ProgressPanelV3Props {
   hunt: Hunt
   onIncrement: (delta: number) => void
-  onSetCount: (count: number) => void
   onUndo: () => void
   onComplete: () => void
   onReset: () => void
@@ -48,7 +46,6 @@ function calculateAttemptsForProbability(odds: number, targetProbability: number
 export function ProgressPanelV3({
   hunt,
   onIncrement,
-  onSetCount,
   onUndo,
   onComplete,
   onReset,

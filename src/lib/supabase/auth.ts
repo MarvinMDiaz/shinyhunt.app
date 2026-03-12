@@ -227,7 +227,7 @@ export async function initializeUserProfile(userId: string): Promise<{ error: Er
     }
     
     // Ensure founder_popup_shown is initialized (default to false if null)
-    const founderPopupShown = currentProfile.founder_popup_shown ?? false
+    // founderPopupShown variable removed - value is used directly in updatePayload
     
     // Prepare update payload - only initialize founder_popup_shown if null
     const updatePayload: any = {}

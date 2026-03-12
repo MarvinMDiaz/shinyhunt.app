@@ -10,7 +10,6 @@ interface FloatingSparklesProps {
 }
 
 export function FloatingSparkles({ 
-  count = 50,
   goldCount = 20,
   cyanCount = 15,
   themeId = 'default'

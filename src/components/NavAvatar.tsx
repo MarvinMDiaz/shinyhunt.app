@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/context/AuthContext'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { cn } from '@/lib/utils'
 
@@ -12,7 +11,6 @@ interface NavAvatarProps {
 }
 
 export function NavAvatar({ onClick, className = '', size = 'md' }: NavAvatarProps) {
-  const { user } = useAuth()
   const { profile, loadingProfile } = useUserProfile()
   const hasFirst151Badge = profile?.badges?.includes('first_151_trainer') || false
   const [showSparkle, setShowSparkle] = useState(false)

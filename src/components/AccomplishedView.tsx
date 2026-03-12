@@ -330,7 +330,7 @@ export function AccomplishedView({
                               src={displayPokemon.shinyImage}
                               alt={`Shiny ${displayPokemon.name}`}
                               className="w-full h-full object-contain rounded-xl drop-shadow-2xl"
-                              onError={(e) => {
+                              onError={() => {
                                 console.error(`[AccomplishedView] Failed to load shiny image for ${displayPokemon.name}:`, displayPokemon.shinyImage)
                               }}
                             />

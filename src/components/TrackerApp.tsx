@@ -11,13 +11,11 @@ import { ResetHuntDialog, ResetType, ResetOptions } from '@/components/ResetHunt
 import { HuntDetails } from '@/components/HuntDetails'
 import { ProgressPanelV3 } from '@/components/ProgressPanelV3'
 import { AccomplishedView } from '@/components/AccomplishedView'
-import { LandingPage } from '@/components/LandingPage'
 import { DarkModeToggle } from '@/components/DarkModeToggle'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { FloatingSparkles } from '@/components/FloatingSparkles'
 import { TrackerBackground } from '@/components/TrackerBackground'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { ThemedCard } from '@/components/ThemedCard'
 import { AccountSettings } from '@/components/AccountSettings'
 import { NavAvatar } from '@/components/NavAvatar'
 import { useToast } from '@/hooks/use-toast'
@@ -33,11 +31,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Palette } from 'lucide-react'
 import { themes } from '@/lib/themes'
-import { loadStateSafelySync } from '@/lib/persistence'
 import { storageService, initializeStorageService } from '@/lib/storageService'
-import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
+import { savePreferences } from '@/lib/preferencesStorage'
 import { Hunt, AppState, HistoryEntry } from '@/types'
-import { initializeUserProfile, markFirst151PopupSeen as markPopupSeenSupabase } from '@/lib/supabase/auth'
+import { initializeUserProfile } from '@/lib/supabase/auth'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { useAuth } from '@/context/AuthContext'
 import { First151CelebrationPopup } from '@/components/First151CelebrationPopup'
@@ -77,7 +74,6 @@ export function TrackerApp() {
         setState({
           hunts: [],
           currentHuntId: null,
-          history: [],
           darkMode: state.darkMode, // Preserve dark mode preference
           theme: state.theme, // Preserve theme preference
         })
@@ -103,7 +99,6 @@ export function TrackerApp() {
         setState({
           hunts: [],
           currentHuntId: null,
-          history: [],
           darkMode: state.darkMode,
           theme: state.theme,
         })
@@ -323,8 +318,10 @@ export function TrackerApp() {
 
     const signupNumber = profile.signup_number
     // Explicitly check for boolean true (handle string "true" or boolean true)
-    const founderBadge = profile.founder_badge === true || profile.founder_badge === 'true'
-    const founderPopupShown = profile.founder_popup_shown === true || profile.founder_popup_shown === 'true'
+    const founderBadge = profile.founder_badge === true || 
+                         (typeof profile.founder_badge === 'string' && profile.founder_badge === 'true')
+    const founderPopupShown = profile.founder_popup_shown === true || 
+                              (typeof profile.founder_popup_shown === 'string' && profile.founder_popup_shown === 'true')
 
     // DEBUG: Log profile from context
     console.log('[TrackerApp] Profile from context (for popup check):', {
@@ -411,7 +408,7 @@ export function TrackerApp() {
   const [renameHuntId, setRenameHuntId] = useState<string | null>(null)
   const [deleteHuntId, setDeleteHuntId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('active')
-  const [resetSnapshot, setResetSnapshot] = useState<Hunt | null>(null)
+  // resetSnapshot removed - undo functionality not currently implemented
   const [showLandingPage, setShowLandingPage] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [showFirst151Popup, setShowFirst151Popup] = useState(false)
@@ -422,13 +419,12 @@ export function TrackerApp() {
   const handleLogout = async () => {
     try {
       // Clear application state first
-      setState({
-        hunts: [],
-        currentHuntId: null,
-        history: [],
-        darkMode: state.darkMode,
-        theme: state.theme,
-      })
+        setState({
+          hunts: [],
+          currentHuntId: null,
+          darkMode: state.darkMode,
+          theme: state.theme,
+        })
       
       // Sign out from Supabase (this will clear caches via AuthContext)
       await signOut()
@@ -543,13 +539,12 @@ export function TrackerApp() {
   })
   
   // Get completed hunts (status='completed' or legacy completed=true)
-  const completedHunts = state.hunts.filter((h) => {
-    if (h.archived) return false
-    // New status-based logic
-    if (h.status === 'completed') return true
-    // Legacy: if no status field, check completed flag
-    return h.completed === true
-  })
+  // Note: Currently computed but not used - kept for future features
+  // const completedHunts = state.hunts.filter((h) => {
+  //   if (h.archived) return false
+  //   if (h.status === 'completed') return true
+  //   return h.completed === true
+  // })
 
   // Current hunt must be active (not completed)
   const currentHunt = activeHunts.find((h) => h.id === state.currentHuntId) || null
@@ -631,19 +626,7 @@ export function TrackerApp() {
     setShowLandingPage(false)
   }
 
-  const startHunting = () => {
-    const currentActiveHunts = state.hunts.filter((h) => {
-      if (h.archived) return false
-      if (h.status === 'completed') return false
-      if (h.status === 'active') return true
-      return !h.completed
-    })
-    if (currentActiveHunts.length === 0) {
-      createHunt('My First Hunt')
-    }
-    setShowLandingPage(false)
-    setActiveTab('active')
-  }
+  // startHunting removed - functionality moved to createHunt dialog
 
   const duplicateHunt = (id: string) => {
     const hunt = state.hunts.find((h) => h.id === id)
@@ -846,24 +829,24 @@ export function TrackerApp() {
   const resetHunt = (type: ResetType, options?: ResetOptions) => {
     if (!currentHunt) return
 
-    const snapshot: Hunt = { ...currentHunt }
-    setResetSnapshot(snapshot)
+    // Snapshot removed - undo functionality not currently implemented
 
-    if (type === 'count') {
+    const keepHistory = options?.keepHistory ?? false
+    const keepPokemon = options?.keepPokemon ?? true
+    const keepSettings = options?.keepSettings ?? true
+
+    if (type === 'count-only') {
       updateHunt(currentHunt.id, {
         count: 0,
-        history: [],
+        history: keepHistory ? currentHunt.history : [],
       })
-    } else if (type === 'all') {
+    } else if (type === 'whole-hunt') {
       updateHunt(currentHunt.id, {
         count: 0,
         history: [],
         startDate: new Date(),
-        goal: 0,
-      })
-    } else if (type === 'pokemon') {
-      updateHunt(currentHunt.id, {
-        pokemon: null,
+        goal: keepSettings ? currentHunt.goal : 0,
+        pokemon: keepPokemon ? currentHunt.pokemon : null,
       })
     }
 
@@ -873,7 +856,8 @@ export function TrackerApp() {
     })
   }
 
-  const hasAnyHunts = state.hunts.length > 0
+  // hasAnyHunts computed but not currently used
+  // const hasAnyHunts = state.hunts.length > 0
 
   // Show landing page only if explicitly requested, not just because there are no hunts
   // After login, users should see the tracker interface even if they have no hunts yet
@@ -1158,10 +1142,15 @@ export function TrackerApp() {
                   <ProgressPanelV3
                     hunt={currentHunt}
                     onIncrement={incrementCount}
-                    onSetCount={setCount}
                     onUndo={undoLastAction}
-                    onComplete={completeHunt}
-                    onReset={resetHunt}
+                    onComplete={() => {
+                      // Open complete dialog - ProgressPanelV3 doesn't handle continueCounting
+                      setCompleteDialogOpen(true)
+                    }}
+                    onReset={() => {
+                      // Open reset dialog - ProgressPanelV3 doesn't handle ResetType/Options
+                      setResetDialogOpen(true)
+                    }}
                     onUpdate={(updates) => updateHunt(currentHunt.id, updates)}
                     themeId={state.theme}
                   />

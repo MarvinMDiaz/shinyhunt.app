@@ -203,9 +203,9 @@ export function Achievements() {
   // Also handle case where founder_badge might be stored as number 1 or string "1"
   const founderBadgeRaw = profile?.founder_badge
   const founderBadge = founderBadgeRaw === true || 
-                       founderBadgeRaw === 'true' || 
-                       founderBadgeRaw === 1 || 
-                       founderBadgeRaw === '1'
+                       (typeof founderBadgeRaw === 'string' && founderBadgeRaw === 'true') || 
+                       (typeof founderBadgeRaw === 'number' && founderBadgeRaw === 1) || 
+                       (typeof founderBadgeRaw === 'string' && founderBadgeRaw === '1')
   
   // DEBUG: Log raw profile values
   useEffect(() => {

@@ -12,6 +12,7 @@ import { uploadAvatar } from '@/lib/supabase/storage'
 import { updateProfileAvatar } from '@/lib/supabase/auth'
 import { useAdmin } from '@/hooks/useAdmin'
 import { Settings } from 'lucide-react'
+import type { BadgeId } from '@/lib/auth'
 
 // Separator component - simple divider
 const Separator = () => <div className="border-t border-border my-4" />
@@ -204,7 +205,9 @@ export function AccountSettings({ onSignOut }: AccountSettingsProps) {
                 Your achievements and recognition
               </p>
             </div>
-            <BadgeDisplay badgeIds={profile.badges} />
+            <BadgeDisplay badgeIds={(profile.badges || []).filter((b): b is BadgeId => 
+              ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts'].includes(b)
+            )} />
           </div>
           <Separator />
         </>

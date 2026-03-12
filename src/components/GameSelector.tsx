@@ -21,11 +21,11 @@ interface GameSelectorProps {
 export function GameSelector({
   selectedGameId,
   onGameChange,
-  themeId = 'default',
   className = '',
 }: GameSelectorProps) {
   const [games, setGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  // themeId is used for ThemedCard styling
 
   useEffect(() => {
     async function fetchGames() {

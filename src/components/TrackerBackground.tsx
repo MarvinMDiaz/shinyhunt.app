@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Theme, getTheme } from '@/lib/themes'
+import { getTheme } from '@/lib/themes'
 import { ThemeId } from '@/lib/themes'
 
 interface TrackerBackgroundProps {

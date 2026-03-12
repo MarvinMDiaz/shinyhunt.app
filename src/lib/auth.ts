@@ -128,7 +128,7 @@ export function getUserBadges(badgeIds: BadgeId[] = []): Badge[] {
     .filter((badge): badge is Badge => badge !== undefined)
 }
 
-export function login(email: string, password: string): { success: boolean; error?: string } {
+export function login(email: string, _password: string): { success: boolean; error?: string } {
   // In mock system, password is ignored (just check email exists)
   const users = getStoredUsers()
   const user = users.find(u => u.email === email)
@@ -189,9 +189,8 @@ export async function logout(): Promise<void> {
     const { user } = await getSupabaseUser()
     const userId = user?.id
     
-    // Sign out from Supabase globally
-    const { signOut } = await import('@/lib/supabase/auth')
-    await signOut()
+    // Sign out from Supabase globally - use AuthContext's signOut instead
+    // Note: signOut is now handled by AuthContext, not this file
     
     // Clear user-specific caches
     clearUserSpecificCache(userId)
@@ -404,7 +403,7 @@ export function getAllUsers(): User[] {
  * 
  * TODO: Replace with proper admin management UI or backend endpoint
  */
-export function setUserAdmin(userEmail: string, isAdmin: boolean): boolean {
+export async function setUserAdmin(userEmail: string, isAdmin: boolean): Promise<boolean> {
   try {
     const users = getStoredUsers()
     const userIndex = users.findIndex(u => u.email === userEmail)
@@ -420,7 +419,7 @@ export function setUserAdmin(userEmail: string, isAdmin: boolean): boolean {
     localStorage.setItem('shinyhunt_users', JSON.stringify(users))
     
     // Update current user if it's the same user
-    const currentUser = getCurrentUser()
+    const currentUser = await getCurrentUser()
     if (currentUser && currentUser.email === userEmail) {
       currentUser.role = isAdmin ? 'admin' : 'user'
       currentUser.isAdmin = isAdmin
@@ -438,8 +437,8 @@ export function setUserAdmin(userEmail: string, isAdmin: boolean): boolean {
 /**
  * Mark the First 151 celebration popup as seen for the current user
  */
-export function markFirst151PopupSeen(): void {
-  const user = getCurrentUser()
+export async function markFirst151PopupSeen(): Promise<void> {
+  const user = await getCurrentUser()
   if (!user) return
 
   user.hasSeenFirst151Popup = true

@@ -12,7 +12,7 @@ import { ThemeId } from './themes'
 import { storageService } from './storageService'
 import { loadPreferences, savePreferences } from './preferencesStorage'
 
-const STORAGE_KEY = 'shiny-hunter-app-state' // Legacy key, kept for migration
+// Legacy key removed - using storageService now
 const POKEMON_CACHE_KEY = 'pokemon-cache'
 const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000 // 7 days
 const CURRENT_VERSION = '2.0.0'
@@ -114,12 +114,11 @@ export async function saveState(state: AppState): Promise<void> {
     // Save hunts individually (storageService handles batch operations)
     // Note: This is a simplified approach. In production, you'd want to batch updates.
     let existingHunts: Hunt[] = []
-    let existingIds = new Set<string>()
     
     try {
       existingHunts = await storageService.getAllHunts()
       console.log('[saveState] Existing hunts from storage:', existingHunts.length)
-      existingIds = new Set(existingHunts.map(h => h.id))
+      // existingIds removed - not needed for Supabase persistence
     } catch (getAllError) {
       console.warn('[saveState] Failed to get existing hunts (will try to create anyway):', getAllError)
       // Continue - we'll try to create hunts anyway, and if they exist, update will handle it
@@ -196,7 +195,7 @@ export async function saveState(state: AppState): Promise<void> {
  * @deprecated Use async saveState() instead
  * No longer saves to localStorage - hunts are in Supabase
  */
-export function saveStateSync(state: AppState): void {
+export function saveStateSync(_state: AppState): void {
   // No-op - hunts are now saved to Supabase via async saveState()
   // Only preferences are saved to localStorage (handled separately)
 }

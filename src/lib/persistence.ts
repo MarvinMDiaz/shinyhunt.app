@@ -4,8 +4,7 @@
  */
 
 import { AppState } from '@/types'
-import { saveState, loadState, loadStateSync, saveStateSync } from './storage'
-import { storageService } from './storageService'
+import { saveState, loadState, loadStateSync } from './storage'
 
 const BACKUP_KEY = 'shiny-hunter-backup'
 
@@ -29,7 +28,7 @@ export async function saveStateSafely(state: AppState): Promise<boolean> {
  * @deprecated Use async saveStateSafely() instead
  * Now saves to Supabase (async), so this is just a wrapper
  */
-export function saveStateSafelySync(state: AppState): boolean {
+export function saveStateSafelySync(_state: AppState): boolean {
   // This is now async under the hood, but we return true for compatibility
   // The actual save happens via async saveStateSafely()
   return true

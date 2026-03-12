@@ -13,6 +13,7 @@ import {
   formatDate,
   formatDateTime,
   cn,
+  type DayData,
 } from '@/lib/utils'
 
 interface SessionHeatMapCardProps {
@@ -36,12 +37,11 @@ export function SessionHeatMapCard({ history, themeId = 'default' }: SessionHeat
   const isFuture = nextDate.getFullYear() > currentYear || 
     (nextDate.getFullYear() === currentYear && nextDate.getMonth() > currentMonth)
 
-  const { dayMap, monthData, getLevel } = useMemo(() => {
+  const { monthData, getLevel } = useMemo(() => {
     const aggregated = aggregateHistoryByDay(history)
     const month = buildMonthGrid(viewYear, viewMonth, aggregated)
     const { getLevel } = calculateMonthIntensityLevels(month)
     return {
-      dayMap: aggregated,
       monthData: month,
       getLevel,
     }
@@ -104,8 +104,8 @@ export function SessionHeatMapCard({ history, themeId = 'default' }: SessionHeat
   }
 
   // Calculate weeks (5-6 rows)
-  const weeks: (typeof monthData.days)[][] = []
-  let currentWeek: (typeof monthData.days)[] = []
+  const weeks: (DayData | null)[][] = []
+  let currentWeek: (DayData | null)[] = []
   
   for (let i = 0; i < monthData.days.length; i++) {
     if (i % 7 === 0 && currentWeek.length > 0) {
@@ -176,7 +176,7 @@ export function SessionHeatMapCard({ history, themeId = 'default' }: SessionHeat
             <div className="space-y-[2px] w-fit">
               {weeks.map((week, weekIdx) => (
                 <div key={weekIdx} className="grid grid-cols-7 gap-[2px] w-fit">
-                  {week.map((day, dayIdx) => {
+                  {week.map((day: DayData | null, dayIdx) => {
                     if (day === null) {
                       return (
                         <div

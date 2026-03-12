@@ -211,11 +211,7 @@ export function calculateIntensityLevels(
   const sorted = [...attempts].sort((a, b) => a - b)
   const max = sorted[sorted.length - 1]
   
-  // Calculate quantiles
-  const getQuantile = (p: number) => {
-    const index = Math.floor(sorted.length * p)
-    return sorted[Math.min(index, sorted.length - 1)]
-  }
+  // Calculate quantiles (getQuantile function removed - not currently used)
   
   const levels = [
     0, // Level 0: no attempts

@@ -245,7 +245,7 @@ export { SupabaseHuntAdapter } from './supabase/hunts'
  * via initializeStorageService() before use to ensure correct adapter.
  */
 let huntAdapter: HuntStorageAdapter = new LocalStorageHuntAdapter()
-let adapterInitialized = false
+// adapterInitialized removed - set but never read
 
 /**
  * Initialize storage service
@@ -254,7 +254,7 @@ let adapterInitialized = false
 export async function initializeStorageService(adapter?: HuntStorageAdapter): Promise<void> {
   if (adapter) {
     huntAdapter = adapter
-    adapterInitialized = true
+    // adapterInitialized removed - not currently used
     console.log('[StorageService] Initialized with provided adapter:', adapter.constructor.name)
     return
   }
@@ -268,18 +268,18 @@ export async function initializeStorageService(adapter?: HuntStorageAdapter): Pr
       // User is authenticated - use Supabase adapter
       const { SupabaseHuntAdapter } = await import('./supabase/hunts')
       huntAdapter = new SupabaseHuntAdapter()
-      adapterInitialized = true
+      // adapterInitialized removed - not currently used
       console.log('[StorageService] Initialized with Supabase adapter for user:', session.user.id)
     } else {
       // User not authenticated - use localStorage adapter
       huntAdapter = new LocalStorageHuntAdapter()
-      adapterInitialized = true
+      // adapterInitialized removed - not currently used
       console.log('[StorageService] Initialized with localStorage adapter (no auth)')
     }
   } catch (error) {
     console.warn('[StorageService] Failed to check auth, using localStorage:', error)
     huntAdapter = new LocalStorageHuntAdapter()
-    adapterInitialized = true
+    // adapterInitialized removed - not currently used
   }
 }
 

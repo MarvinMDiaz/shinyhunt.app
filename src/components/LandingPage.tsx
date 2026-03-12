@@ -1,4 +1,4 @@
-import { ChevronDown, Sparkles, Trophy, BarChart3, Target, UserPlus, LogIn } from 'lucide-react'
+import { ChevronDown, Sparkles, Trophy, BarChart3, Target, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -203,7 +203,7 @@ function BrandedBackground() {
   )
 }
 
-export function LandingPage({ onStartHunting, onNavigateToTracker, onViewTrophyCase, completedHuntsCount = 0, darkMode, onToggleDarkMode }: LandingPageProps) {
+export function LandingPage({ onStartHunting, onNavigateToTracker, onViewTrophyCase, darkMode, onToggleDarkMode }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-background relative">
       {/* Navigation Bar */}

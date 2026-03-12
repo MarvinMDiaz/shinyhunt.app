@@ -14,7 +14,7 @@ interface PokemonSearchProps {
   gameId?: string // Optional game ID to filter Pokémon
 }
 
-export function PokemonSearch({ selected, onSelect, gameId }: PokemonSearchProps) {
+export function PokemonSearch({ onSelect, gameId }: PokemonSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Pokemon[]>([])
   const [loading, setLoading] = useState(false)
@@ -35,7 +35,7 @@ export function PokemonSearch({ selected, onSelect, gameId }: PokemonSearchProps
     }
 
     setLoading(true)
-    timeoutRef.current = setTimeout(async () => {
+    timeoutRef.current = window.setTimeout(async () => {
       const pokemon = await searchPokemon(query)
       
       // Filter by game availability if a game is selected

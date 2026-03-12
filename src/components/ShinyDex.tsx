@@ -5,10 +5,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Hunt } from '@/types'
-import { formatDate, formatOdds } from '@/lib/utils'
+import { formatDate, formatOdds, cn } from '@/lib/utils'
 import { fetchPokemon } from '@/lib/pokeapi'
-import { cn } from '@/lib/utils'
-import { isValidShinyPokemon, getGeneration } from '@/lib/shinyReference'
+// isValidShinyPokemon and getGeneration removed - not currently used
 import { loadGames, getGameById } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { filterPokemonByGame } from '@/data/pokemonGameAvailability'
@@ -211,7 +210,10 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
           // Find tile by ID (works regardless of list order)
           const index = updated.findIndex((p) => p.id === tile.id)
           if (index >= 0) {
-            updated[index] = tile
+            updated[index] = {
+              ...tile,
+              shinyImage: tile.shinyImage ?? null, // Convert undefined to null
+            }
           }
         })
         return updated
@@ -332,7 +334,6 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
           {currentPageTiles.map((tile) => {
             const isCompleted = completedPokemonIdsForFilter.has(tile.id)
             const isLoading = loadingTiles.has(tile.id)
-            const completedHunts = getCompletedHuntsForPokemon(tile.id)
 
           return (
             <Card
