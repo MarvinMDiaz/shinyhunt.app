@@ -70,24 +70,42 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
           {/* Badge Showcase Area - Static Stage with Floating Badge */}
           <div className="relative w-full overflow-hidden" style={{ height: '320px' }}>
             {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
-            <div className="absolute inset-0 flex items-end justify-center pb-0">
+            <div className="absolute inset-0 flex items-end justify-center pb-0 z-10">
               <img
-                key={podiumImagePath}
+                key={`podium-${badgeId}-${podiumImagePath}`}
                 src={podiumImagePath}
                 alt={isPokeverseBadge ? "PokéVerse Podium" : "Trophy Podium"}
                 className="w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"
+                style={{ 
+                  zIndex: 10,
+                  display: 'block',
+                  visibility: 'visible',
+                  opacity: 1,
+                }}
                 onError={(e) => {
                   console.error('[Achievements] Failed to load podium image:', {
                     expectedPath: podiumImagePath,
                     actualSrc: e.currentTarget.src,
                     badgeId,
                     isPokeverseBadge,
+                    imageElement: e.currentTarget,
+                    computedStyle: window.getComputedStyle(e.currentTarget),
                   })
                   // Don't fallback - let the error show so we can debug
                 }}
-                onLoad={() => {
+                onLoad={(e) => {
+                  const img = e.currentTarget
                   if (isDev && isPokeverseBadge) {
-                    console.log('[Achievements] PokéVerse podium image loaded successfully:', podiumImagePath)
+                    console.log('[Achievements] PokéVerse podium image loaded successfully:', {
+                      path: podiumImagePath,
+                      imageWidth: img.naturalWidth,
+                      imageHeight: img.naturalHeight,
+                      displayWidth: img.width,
+                      displayHeight: img.height,
+                      computedDisplay: window.getComputedStyle(img).display,
+                      computedVisibility: window.getComputedStyle(img).visibility,
+                      computedOpacity: window.getComputedStyle(img).opacity,
+                    })
                   }
                 }}
               />
