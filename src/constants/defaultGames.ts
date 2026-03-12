@@ -26,6 +26,12 @@ export const DEFAULT_GAMES: Game[] = [
     generation: 1,
     platform: "Game Boy",
   },
+  {
+    id: "yellow",
+    name: "Yellow",
+    generation: 1,
+    platform: "Game Boy",
+  },
   // Generation 2
   {
     id: "gold",
@@ -36,6 +42,12 @@ export const DEFAULT_GAMES: Game[] = [
   {
     id: "silver",
     name: "Silver",
+    generation: 2,
+    platform: "Game Boy Color",
+  },
+  {
+    id: "crystal",
+    name: "Crystal",
     generation: 2,
     platform: "Game Boy Color",
   },
@@ -236,13 +248,6 @@ export const DEFAULT_GAMES: Game[] = [
   {
     id: "legends_za",
     name: "Legends Z-A",
-    generation: 10,
-    platform: "Nintendo Switch",
-  },
-  // Special / Spin-Off
-  {
-    id: "pokopia",
-    name: "Pokémon Pokopia",
     generation: 10,
     platform: "Nintendo Switch",
   },

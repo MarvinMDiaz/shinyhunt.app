@@ -12,6 +12,12 @@
     "platform": "Game Boy"
   },
   {
+    "id": "yellow",
+    "name": "Yellow",
+    "generation": 1,
+    "platform": "Game Boy"
+  },
+  {
     "id": "gold",
     "name": "Gold",
     "generation": 2,
@@ -20,6 +26,12 @@
   {
     "id": "silver",
     "name": "Silver",
+    "generation": 2,
+    "platform": "Game Boy Color"
+  },
+  {
+    "id": "crystal",
+    "name": "Crystal",
     "generation": 2,
     "platform": "Game Boy Color"
   },
@@ -212,12 +224,6 @@
   {
     "id": "legends_za",
     "name": "Legends Z-A",
-    "generation": 10,
-    "platform": "Nintendo Switch"
-  },
-  {
-    "id": "pokopia",
-    "name": "Pokémon Pokopia",
     "generation": 10,
     "platform": "Nintendo Switch"
   }
