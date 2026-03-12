@@ -14,6 +14,13 @@
     "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4b/Pokemon_Red_Logo_EN.png/200px-Pokemon_Red_Logo_EN.png"
   },
   {
+    "id": "yellow",
+    "name": "Yellow",
+    "generation": 1,
+    "platform": "Game Boy",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4b/Pokemon_Yellow_Logo_EN.png/200px-Pokemon_Yellow_Logo_EN.png"
+  },
+  {
     "id": "gold",
     "name": "Gold",
     "generation": 2,
@@ -26,6 +33,13 @@
     "generation": 2,
     "platform": "Game Boy Color",
     "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Gold_Logo_EN.png/200px-Pokemon_Gold_Logo_EN.png"
+  },
+  {
+    "id": "crystal",
+    "name": "Crystal",
+    "generation": 2,
+    "platform": "Game Boy Color",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Crystal_Logo_EN.png/200px-Pokemon_Crystal_Logo_EN.png"
   },
   {
     "id": "ruby",
@@ -250,11 +264,5 @@
     "generation": 10,
     "platform": "Nintendo Switch",
     "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Legends_Arceus_logo.png/200px-Pokemon_Legends_Arceus_logo.png"
-  },
-  {
-    "id": "pokopia",
-    "name": "Pokémon Pokopia",
-    "generation": 10,
-    "platform": "Nintendo Switch"
   }
 ]
