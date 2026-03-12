@@ -358,7 +358,7 @@ export function Achievements() {
 
   // Sort badges by unlock date (signup date for first_151_trainer)
   // Use profile creation date or current date as fallback
-  const validBadgeIds: BadgeId[] = ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts']
+  const validBadgeIds: BadgeId[] = ['first_151_trainer', 'hundred_shiny_hunts', 'full_dex_completion', 'gen_1_master', 'ten_thousand_attempts', 'pokeverse_member']
   const achievements = finalDisplayBadges
     .filter((badgeId): badgeId is BadgeId => {
       // Type guard to ensure badgeId is a valid BadgeId
