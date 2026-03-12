@@ -9,7 +9,9 @@
  * - Never log: IDs, tokens, emails, user objects, raw DB rows, admin state, auth payloads
  */
 
-const isDev = import.meta.env.DEV
+// Use PROD to detect production (more reliable than DEV)
+const isProduction = import.meta.env.PROD
+const isDev = import.meta.env.DEV && !import.meta.env.PROD
 
 /**
  * Sensitive keys that should be redacted from logs
@@ -209,6 +211,7 @@ export const logger = {
    * Completely disabled in production
    */
   debug(...args: any[]): void {
+    if (isProduction) return // Explicit production check
     if (!isDev) return
     const sanitized = formatLogArgs(args)
     console.debug('[DEBUG]', ...sanitized)
@@ -219,6 +222,7 @@ export const logger = {
    * Completely disabled in production
    */
   info(...args: any[]): void {
+    if (isProduction) return // Explicit production check
     if (!isDev) return
     const sanitized = formatLogArgs(args)
     console.info('[INFO]', ...sanitized)
@@ -249,6 +253,7 @@ export const logger = {
  * Helper to create safe log messages with counts/status only
  */
 export function safeLog(message: string, safeData?: { count?: number; success?: boolean; status?: string }): void {
+  if (isProduction) return // Explicit production check
   if (!isDev) return
   const safe: Record<string, any> = {}
   if (safeData?.count !== undefined) safe.count = safeData.count

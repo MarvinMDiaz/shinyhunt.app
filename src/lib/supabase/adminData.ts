@@ -601,6 +601,3 @@ export async function getTopUsersByActiveHuntLength(limit: number = 10): Promise
     return []
   }
 }
-
-  }
-}
