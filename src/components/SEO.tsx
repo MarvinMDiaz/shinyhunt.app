@@ -77,6 +77,9 @@ export function SEO({
       <meta name="theme-color" content="#FFD700" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      
+      {/* Google Search Console Verification */}
+      <meta name="google-site-verification" content="mIVHQe5sWLG72_3Z9Kw1X9-DkyO9nioEK5sL0dbeTLE" />
     </Helmet>
   )
 }
