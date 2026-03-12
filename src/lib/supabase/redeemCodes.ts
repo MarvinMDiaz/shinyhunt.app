@@ -32,6 +32,11 @@ export async function redeemCode(code: string): Promise<{
     // Normalize code: trim whitespace and convert to uppercase
     const normalizedCode = code.trim().toUpperCase()
 
+    // Validate code format: 3-32 characters, alphanumeric, underscores, or hyphens
+    if (!/^[A-Z0-9_-]{3,32}$/.test(normalizedCode)) {
+      return { success: false, error: 'Invalid code format. Codes must be 3-32 characters and contain only letters, numbers, underscores, or hyphens.' }
+    }
+
     // Get current user
     const user = await getCurrentUser()
     if (!user?.id) {
@@ -57,14 +62,29 @@ export async function redeemCode(code: string): Promise<{
     }
 
     // 3. Check for duplicate redemption
+    // Use .maybeSingle() instead of .single() to handle missing rows gracefully
     const { data: existingRedemption, error: redemptionCheckError } = await supabase
       .from('redeemed_codes')
       .select('*')
       .eq('user_id', userId)
       .eq('code', normalizedCode)
-      .single()
+      .maybeSingle()
 
-    if (existingRedemption && !redemptionCheckError) {
+    // Only treat as error if there's an actual error (not a missing row)
+    // If redemptionCheckError exists and it's not a "not found" type error, that's a real problem
+    if (redemptionCheckError) {
+      // Check if it's a PGRST error code for "not found" (PGRST116) or similar
+      // For Supabase, missing rows typically return null data without error
+      // But if there's an actual error (like RLS policy issue), log it
+      const errorCode = (redemptionCheckError as any)?.code
+      if (errorCode && errorCode !== 'PGRST116') {
+        console.error('[redeemCode] Error checking for existing redemption:', redemptionCheckError)
+        // Continue anyway - if we can't check, we'll try to insert and let that fail if duplicate
+      }
+    }
+
+    // If a redemption exists, block the redemption
+    if (existingRedemption) {
       return { success: false, error: 'This code has already been redeemed.' }
     }
 
