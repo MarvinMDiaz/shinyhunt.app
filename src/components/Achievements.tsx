@@ -55,7 +55,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Different layout for PokéVerse badge */}
           {isPokeverseBadge ? (
-            <div className="w-full flex flex-col items-center py-8">
+            <div className="w-full flex flex-col items-center pt-8 pb-0">
               {!imageError ? (
                 <img
                   src={badgeImagePath}
@@ -63,7 +63,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                   className="w-64 h-64 md:w-80 md:h-80 object-contain block"
                   style={{
                     objectFit: 'contain',
-                    margin: '0 auto 16px auto',
+                    margin: '0 auto 0 auto',
                     display: 'block',
                   }}
                   onError={() => setImageError(true)}
@@ -72,7 +72,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 <div 
                   className="w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center"
                   style={{
-                    margin: '0 auto 16px auto',
+                    margin: '0 auto 0 auto',
                     display: 'block',
                   }}
                 >
@@ -164,7 +164,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
           )}
           
           {/* Rarity/Status Label */}
-          <div className="flex justify-center">
+          <div className={`flex justify-center ${isPokeverseBadge ? '-mt-16 md:-mt-20' : ''}`}>
             <Badge 
               variant={rarityLabel.variant}
               className={`text-xs font-semibold px-3 py-1 ${
@@ -179,7 +179,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
           </div>
           
           {/* Achievement Title - Below Badge */}
-          <div className="space-y-2 w-full pt-2">
+          <div className={`space-y-2 w-full ${isPokeverseBadge ? 'pt-0' : 'pt-2'}`}>
             <CardTitle className="text-lg md:text-xl font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
               {badge.icon && <span className="text-xl">{badge.icon}</span>}
               {badge.name}
