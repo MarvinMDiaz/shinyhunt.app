@@ -29,6 +29,9 @@ export async function redeemCode(code: string): Promise<{
   badgeUnlocked?: string
 }> {
   try {
+    // Normalize code: trim whitespace and convert to uppercase
+    const normalizedCode = code.trim().toUpperCase()
+
     // Get current user
     const user = await getCurrentUser()
     if (!user?.id) {
@@ -41,7 +44,7 @@ export async function redeemCode(code: string): Promise<{
     const { data: redeemCodeData, error: codeError } = await supabase
       .from('redeem_codes')
       .select('*')
-      .eq('code', code.trim().toUpperCase())
+      .eq('code', normalizedCode)
       .single()
 
     if (codeError || !redeemCodeData) {
@@ -58,7 +61,7 @@ export async function redeemCode(code: string): Promise<{
       .from('redeemed_codes')
       .select('*')
       .eq('user_id', userId)
-      .eq('code', code.trim().toUpperCase())
+      .eq('code', normalizedCode)
       .single()
 
     if (existingRedemption && !redemptionCheckError) {
@@ -70,7 +73,7 @@ export async function redeemCode(code: string): Promise<{
       .from('redeemed_codes')
       .insert({
         user_id: userId,
-        code: code.trim().toUpperCase(),
+        code: normalizedCode,
       })
 
     if (insertError) {
@@ -82,7 +85,7 @@ export async function redeemCode(code: string): Promise<{
     const { error: updateError } = await supabase
       .from('redeem_codes')
       .update({ uses: redeemCodeData.uses + 1 })
-      .eq('code', code.trim().toUpperCase())
+      .eq('code', normalizedCode)
 
     if (updateError) {
       console.error('[redeemCode] Error updating code uses:', updateError)
