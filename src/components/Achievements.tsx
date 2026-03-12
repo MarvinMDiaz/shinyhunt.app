@@ -60,10 +60,8 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 <img
                   src={badgeImagePath}
                   alt={badge.name}
-                  className="w-24 h-24 object-contain"
+                  className="object-contain block sm:w-[120px] sm:h-[120px] w-[100px] h-[100px]"
                   style={{
-                    width: '96px',
-                    height: '96px',
                     objectFit: 'contain',
                     margin: '0 auto 16px auto',
                     display: 'block',
@@ -72,15 +70,13 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 />
               ) : (
                 <div 
-                  className="w-24 h-24 bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center"
+                  className="bg-gradient-to-br from-yellow-500/30 to-yellow-600/20 border-2 border-yellow-500/50 rounded-xl flex items-center justify-center sm:w-[120px] sm:h-[120px] w-[100px] h-[100px]"
                   style={{
-                    width: '96px',
-                    height: '96px',
                     margin: '0 auto 16px auto',
                     display: 'block',
                   }}
                 >
-                  <span className="text-4xl">{badge.icon || '✨'}</span>
+                  <span className="text-4xl sm:text-5xl">{badge.icon || '✨'}</span>
                 </div>
               )}
             </div>
