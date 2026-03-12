@@ -549,12 +549,18 @@ export function TrackerApp() {
   // Current hunt must be active (not completed)
   const currentHunt = activeHunts.find((h) => h.id === state.currentHuntId) || null
 
-  // Auto-select first active hunt if currentHuntId points to invalid/completed hunt
+  // Auto-select first active hunt if currentHuntId is null or points to invalid/completed hunt
   useEffect(() => {
-    if (activeHunts.length > 0 && !currentHunt && state.currentHuntId !== null) {
-      // currentHuntId points to a completed/archived hunt or doesn't exist
+    if (activeHunts.length > 0 && !currentHunt) {
+      // Either currentHuntId is null or points to a completed/archived hunt that doesn't exist
       // Auto-select the first active hunt
       const firstActiveHuntId = activeHunts[0].id
+      console.log('[TrackerApp] Auto-selecting first active hunt:', {
+        activeHuntsCount: activeHunts.length,
+        currentHuntId: state.currentHuntId,
+        firstActiveHuntId,
+        firstHuntName: activeHunts[0].name,
+      })
       if (state.currentHuntId !== firstActiveHuntId) {
         updateState({ currentHuntId: firstActiveHuntId })
       }
@@ -885,7 +891,14 @@ export function TrackerApp() {
     return null
   }
 
-  console.log('TrackerApp rendering main UI', { activeHunts: activeHunts.length, currentHunt: currentHunt?.id })
+  console.log('TrackerApp rendering main UI', { 
+    totalHunts: state.hunts.length,
+    activeHunts: activeHunts.length, 
+    currentHunt: currentHunt?.id,
+    currentHuntId: state.currentHuntId,
+    activeHuntIds: activeHunts.map(h => h.id),
+    activeHuntNames: activeHunts.map(h => h.name),
+  })
   
   return (
     <>
