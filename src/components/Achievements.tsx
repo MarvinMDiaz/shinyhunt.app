@@ -78,7 +78,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                 src={isPokeverseBadge ? '/badges/podium-pokeverse.png' : '/badges/podium.png'}
                 alt={isPokeverseBadge ? "PokéVerse Podium" : "Trophy Podium"}
                 className={isPokeverseBadge 
-                  ? "w-full max-w-[150px] md:max-w-[180px] h-auto object-contain drop-shadow-lg"
+                  ? "w-full max-w-[105px] md:max-w-[126px] h-auto object-contain drop-shadow-lg"
                   : "w-full max-w-[300px] md:max-w-[360px] h-auto object-contain drop-shadow-lg"}
                 style={{ 
                   zIndex: 10,
@@ -117,14 +117,14 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             </div>
             
             {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '40px' : '80px' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '70px' : '80px' }}>
               {!imageError ? (
                 <div className="relative">
                   <img
                     src={isPokeverseBadge ? '/badges/dmvpokeverse.png' : badgeImagePath}
                     alt={badge.name}
                     className={isPokeverseBadge 
-                      ? "w-96 h-96 md:w-[480px] md:h-[480px] object-contain drop-shadow-2xl filter relative z-10"
+                      ? "w-[180px] h-[180px] md:w-[220px] md:h-[220px] object-contain drop-shadow-2xl filter relative z-10"
                       : "w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"}
                     style={{
                       animation: 'badge-float 3s ease-in-out infinite',
@@ -133,7 +133,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                   />
                   {/* Shadow under badge */}
                   <div className={isPokeverseBadge 
-                    ? "absolute top-full left-1/2 -translate-x-1/2 w-72 h-12 md:w-96 md:h-16 bg-black/20 blur-xl rounded-full -mt-4 z-0"
+                    ? "absolute top-full left-1/2 -translate-x-1/2 w-36 h-8 md:w-44 md:h-10 bg-black/20 blur-xl rounded-full -mt-4 z-0"
                     : "absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0"} />
                   
                   {/* Pokémon-style sparkles around badge - only for founder badge */}
