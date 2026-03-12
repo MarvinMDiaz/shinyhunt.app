@@ -229,13 +229,17 @@ export function Achievements() {
         founder_badge: profile.founder_badge,
         founder_badge_type: typeof profile.founder_badge,
         founder_badge_value: founderBadgeRaw,
+        pokeverse_member: profile.pokeverse_member,
+        pokeverse_member_type: typeof profile.pokeverse_member,
+        pokeverse_member_value: pokeverseBadgeRaw,
+        pokeverseBadge: pokeverseBadge,
         founder_popup_shown: profile.founder_popup_shown,
         badges: profile.badges,
         badges_type: typeof profile.badges,
         badges_is_array: Array.isArray(profile.badges),
       })
     }
-  }, [profile, founderBadgeRaw])
+  }, [profile, founderBadgeRaw, pokeverseBadgeRaw, pokeverseBadge])
   
   // CRITICAL: If user has founder_badge = true, ALWAYS ensure first_151_trainer is in badges array for display
   // This is the source of truth - founder_badge from Supabase determines if badge should show
@@ -263,7 +267,7 @@ export function Achievements() {
   // Debug logging - detailed breakdown
   useEffect(() => {
     if (profile) {
-      console.log('[Achievements] 🔍 FOUNDER BADGE INJECTION LOGIC:', {
+      console.log('[Achievements] 🔍 BADGE INJECTION LOGIC:', {
         step1_rawProfile: {
           signup_number: profile.signup_number,
           founder_badge: profile.founder_badge,
@@ -296,10 +300,18 @@ export function Achievements() {
           finalDisplayBadges,
           finalDisplayBadgesLength: finalDisplayBadges.length,
           finalWillShowFounderBadge: finalDisplayBadges.includes('first_151_trainer'),
+          finalWillShowPokeverseBadge: finalDisplayBadges.includes('pokeverse_member'),
+        },
+        pokeverse_badge_logic: {
+          pokeverseBadgeRaw,
+          pokeverseBadge,
+          shouldInjectPokeverseBadge,
+          pokeverseInDisplayBadges: displayBadges.includes('pokeverse_member'),
+          pokeverseInFinalDisplayBadges: finalDisplayBadges.includes('pokeverse_member'),
         },
       })
     }
-  }, [profile, signupNumber, founderBadge, founderBadgeRaw, userBadges, shouldInjectFounderBadge, displayBadges, finalDisplayBadges])
+  }, [profile, signupNumber, founderBadge, founderBadgeRaw, userBadges, shouldInjectFounderBadge, displayBadges, finalDisplayBadges, pokeverseBadgeRaw, pokeverseBadge, shouldInjectPokeverseBadge])
   
   // Show loading state only on initial load (not during refreshes)
   // Check if we have any profile data at all

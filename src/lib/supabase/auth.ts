@@ -49,12 +49,13 @@ export async function getUserProfile(userId: string) {
       return { profile: null, error }
     }
 
-    // DEBUG: Log founder fields from Supabase
+    // DEBUG: Log founder fields and badges from Supabase
     console.log('[getUserProfile] Profile fetched from Supabase:', {
       id: data?.id,
       signup_number: data?.signup_number,
       founder_badge: data?.founder_badge,
       founder_popup_shown: data?.founder_popup_shown,
+      pokeverse_member: data?.pokeverse_member,
       badges: data?.badges,
       has_seen_first_151_popup: data?.has_seen_first_151_popup, // Legacy field
     })

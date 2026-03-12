@@ -37,6 +37,9 @@ export function RedeemCodeDialog({ open, onOpenChange, onSuccess }: RedeemCodeDi
       if (result.success) {
         // Refresh profile to get updated badge
         await refreshProfile(true)
+        
+        // Small delay to ensure state updates propagate
+        await new Promise(resolve => setTimeout(resolve, 300))
 
         // Show success message
         if (result.badgeUnlocked === 'pokeverse_member') {
