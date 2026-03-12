@@ -70,7 +70,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
       <CardHeader className="pb-3 pt-3">
         <div className="flex flex-col items-center text-center space-y-3">
           {/* Badge Showcase Area - Static Stage with Floating Badge */}
-          <div className="relative w-full overflow-hidden" style={{ height: isPokeverseBadge ? '420px' : '320px' }}>
+          <div className="relative w-full overflow-hidden" style={{ height: isPokeverseBadge ? '320px' : '320px' }}>
             {/* Static Showcase Background - Podium/Stage Image (No Animation) */}
             <div className="absolute inset-0 flex items-end justify-center pb-0 z-10">
               <img
@@ -117,14 +117,14 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
             </div>
             
             {/* Floating Badge Layer - Only Animated Element */}
-            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '8px' : '80px' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 z-30" style={{ bottom: isPokeverseBadge ? '0px' : '80px' }}>
               {!imageError ? (
                 <div className="relative">
                   <img
                     src={isPokeverseBadge ? '/badges/dmvpokeverse.png' : badgeImagePath}
                     alt={badge.name}
                     className={isPokeverseBadge 
-                      ? "w-[400px] h-[400px] md:w-[500px] md:h-[500px] object-contain drop-shadow-2xl filter relative z-10"
+                      ? "w-[480px] h-[480px] md:w-[600px] md:h-[600px] object-contain drop-shadow-2xl filter relative z-10"
                       : "w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl filter relative z-10"}
                     style={{
                       animation: 'badge-float 3s ease-in-out infinite',
@@ -133,7 +133,7 @@ function AchievementCard({ badgeId, unlockedDate, signupNumber }: AchievementCar
                   />
                   {/* Shadow under badge */}
                   <div className={isPokeverseBadge 
-                    ? "absolute top-full left-1/2 -translate-x-1/2 w-64 h-12 md:w-80 md:h-16 bg-black/20 blur-xl rounded-full -mt-4 z-0"
+                    ? "absolute top-full left-1/2 -translate-x-1/2 w-72 h-14 md:w-96 md:h-18 bg-black/20 blur-xl rounded-full -mt-4 z-0"
                     : "absolute top-full left-1/2 -translate-x-1/2 w-24 h-8 bg-black/20 blur-xl rounded-full -mt-4 z-0"} />
                   
                   {/* Pokémon-style sparkles around badge - only for founder badge */}
