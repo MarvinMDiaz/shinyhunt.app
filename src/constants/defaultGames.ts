@@ -251,4 +251,10 @@ export const DEFAULT_GAMES: Game[] = [
     generation: 10,
     platform: "Nintendo Switch",
   },
+  {
+    id: "pokopia",
+    name: "Pokémon Pokopia",
+    generation: 10,
+    platform: "Nintendo Switch",
+  },
 ]

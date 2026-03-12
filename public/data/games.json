@@ -264,5 +264,12 @@
     "generation": 10,
     "platform": "Nintendo Switch",
     "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Legends_Arceus_logo.png/200px-Pokemon_Legends_Arceus_logo.png"
+  },
+  {
+    "id": "pokopia",
+    "name": "Pokémon Pokopia",
+    "generation": 10,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Legends_Arceus_logo.png/200px-Pokemon_Legends_Arceus_logo.png"
   }
 ]
