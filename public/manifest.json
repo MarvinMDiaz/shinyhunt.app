@@ -1,0 +1,23 @@
+{
+  "name": "ShinyHunt.app - Track Your Shiny Pokémon Journey",
+  "short_name": "ShinyHunt",
+  "description": "Track your shiny Pokémon hunting journey. Calculate odds, visualize progress, and build your trophy case.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FFD700",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-32-165.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-165.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

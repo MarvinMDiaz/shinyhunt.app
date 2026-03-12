@@ -102,6 +102,11 @@ export function aggregateHistoryByDay(
 ): Map<string, DayData> {
   const dayMap = new Map<string, DayData>()
 
+  // Ensure history is an array
+  if (!Array.isArray(history)) {
+    return dayMap
+  }
+
   for (const entry of history) {
     // Only count positive deltas (attempts added)
     if (entry.delta <= 0) continue

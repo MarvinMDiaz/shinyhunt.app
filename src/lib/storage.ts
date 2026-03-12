@@ -1,6 +1,18 @@
-import { Hunt, AppState, ExportData } from '@/types'
+/**
+ * Legacy Storage Module
+ * 
+ * This module maintains backward compatibility with the old storage system.
+ * It now uses the new storageService layer for hunt data and preferencesStorage for preferences.
+ * 
+ * @deprecated Direct use of this module is discouraged. Use storageService and preferencesStorage instead.
+ */
 
-const STORAGE_KEY = 'shiny-hunter-app-state'
+import { Hunt, AppState, ExportData } from '@/types'
+import { ThemeId } from './themes'
+import { storageService } from './storageService'
+import { loadPreferences, savePreferences } from './preferencesStorage'
+
+const STORAGE_KEY = 'shiny-hunter-app-state' // Legacy key, kept for migration
 const POKEMON_CACHE_KEY = 'pokemon-cache'
 const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000 // 7 days
 const CURRENT_VERSION = '2.0.0'
@@ -17,6 +29,10 @@ function migrateHunt(hunt: any): Hunt {
   // Remove region field if it exists (v1 -> v2 migration)
   const { region, ...huntWithoutRegion } = hunt
   
+  // Migrate status field: if completed=true, set status='completed', otherwise status='active'
+  const isCompleted = hunt.completed === true
+  const status = hunt.status || (isCompleted ? 'completed' : 'active')
+  
   return {
     ...huntWithoutRegion,
     createdAt: new Date(hunt.createdAt),
@@ -27,28 +43,34 @@ function migrateHunt(hunt: any): Hunt {
       timestamp: new Date(entry.timestamp),
     })),
     // Ensure new fields have defaults
-    completed: hunt.completed ?? false,
+    status, // New status field
+    completed: hunt.completed ?? false, // Keep for backward compatibility
     continueCounting: hunt.continueCounting ?? false,
     progressColor: hunt.progressColor || undefined, // Optional, defaults to #22c55e in component
+    gameId: hunt.gameId || null, // Game ID (new field, defaults to null for backward compatibility)
   }
 }
 
-export function loadState(): AppState {
+/**
+ * Load app state (legacy compatibility)
+ * Now uses storageService for hunts and preferencesStorage for preferences
+ */
+export async function loadState(): Promise<AppState> {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) {
-      return getDefaultState()
-    }
+    // Load hunts from storage service
+    const hunts = await storageService.getAllHunts()
     
-    const parsed = JSON.parse(stored)
+    // Load current hunt ID
+    const currentHuntId = await storageService.getCurrentHuntId()
     
-    // Migrate hunts (remove region, ensure new fields exist)
-    const hunts: Hunt[] = parsed.hunts.map(migrateHunt)
+    // Load preferences
+    const preferences = loadPreferences()
     
     return {
       hunts,
-      currentHuntId: parsed.currentHuntId,
-      darkMode: parsed.darkMode ?? true,
+      currentHuntId,
+      darkMode: preferences.darkMode,
+      theme: preferences.theme,
       version: CURRENT_VERSION,
     }
   } catch (error) {
@@ -57,16 +79,126 @@ export function loadState(): AppState {
   }
 }
 
-export function saveState(state: AppState): void {
-  try {
-    const stateToSave = {
-      ...state,
-      version: CURRENT_VERSION,
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
-  } catch (error) {
-    console.error('Failed to save state:', error)
+/**
+ * Synchronous version for backward compatibility
+ * @deprecated Use async loadState() instead
+ * Returns default state - hunts are loaded from Supabase when authenticated
+ */
+export function loadStateSync(): AppState {
+  // Return default state - hunts will be loaded from Supabase when authenticated
+  // Only load preferences from localStorage
+  const preferences = loadPreferences()
+  return {
+    hunts: [],
+    currentHuntId: null,
+    darkMode: preferences.darkMode,
+    theme: preferences.theme,
+    version: CURRENT_VERSION,
   }
+}
+
+/**
+ * Save app state (legacy compatibility)
+ * Now uses storageService for hunts and preferencesStorage for preferences
+ */
+export async function saveState(state: AppState): Promise<void> {
+  try {
+    console.log('[saveState] Starting save, hunts count:', state.hunts.length)
+    
+    // Ensure storage service is initialized with correct adapter
+    const { initializeStorageService, getCurrentAdapterType } = await import('./storageService')
+    await initializeStorageService()
+    const adapterType = getCurrentAdapterType()
+    console.log('[saveState] Using adapter:', adapterType)
+    
+    // Save hunts individually (storageService handles batch operations)
+    // Note: This is a simplified approach. In production, you'd want to batch updates.
+    let existingHunts: Hunt[] = []
+    let existingIds = new Set<string>()
+    
+    try {
+      existingHunts = await storageService.getAllHunts()
+      console.log('[saveState] Existing hunts from storage:', existingHunts.length)
+      existingIds = new Set(existingHunts.map(h => h.id))
+    } catch (getAllError) {
+      console.warn('[saveState] Failed to get existing hunts (will try to create anyway):', getAllError)
+      // Continue - we'll try to create hunts anyway, and if they exist, update will handle it
+    }
+    
+    // Update or create each hunt
+    for (const hunt of state.hunts) {
+      try {
+        // Check if hunt exists by trying to get it (more reliable than relying on getAllHunts)
+        const existing = await storageService.getHuntById(hunt.id).catch(() => null)
+        
+        if (existing) {
+          console.log('[saveState] Hunt exists, updating:', hunt.id, hunt.name)
+          const updated = await storageService.updateHunt(hunt.id, hunt)
+          console.log('[saveState] Hunt updated successfully:', updated.id)
+        } else {
+          // Validate hunt has required fields before creating
+          console.log('[saveState] Hunt does not exist, creating:', hunt.id, hunt.name)
+          console.log('[saveState] Hunt pokemon:', hunt.pokemon)
+          
+          if (!hunt.pokemon || !hunt.pokemon.name) {
+            console.warn(`[saveState] Skipping hunt ${hunt.id} - Pokémon not selected yet`)
+            // Don't throw - just skip this hunt until Pokémon is selected
+            // The hunt will be saved once the user selects a Pokémon
+            continue
+          }
+          
+          const created = await storageService.createHunt(hunt)
+          console.log('[saveState] Hunt created successfully:', created.id)
+        }
+      } catch (huntError) {
+        console.error(`[saveState] CRITICAL: Failed to save hunt ${hunt.id}:`, huntError)
+        if (huntError instanceof Error) {
+          console.error(`[saveState] Error message: ${huntError.message}`)
+          console.error(`[saveState] Error stack: ${huntError.stack}`)
+          
+          // If error is about missing Pokémon, don't throw - just skip
+          if (huntError.message.includes('Pokémon must be selected')) {
+            console.warn(`[saveState] Skipping hunt ${hunt.id} - Pokémon not selected yet`)
+            continue
+          }
+        }
+        // For other errors, throw to show to user
+        throw huntError
+      }
+    }
+    
+    // Delete hunts that are no longer in state
+    for (const existingHunt of existingHunts) {
+      if (!state.hunts.find(h => h.id === existingHunt.id)) {
+        console.log('[saveState] Deleting hunt:', existingHunt.id)
+        await storageService.deleteHunt(existingHunt.id)
+      }
+    }
+    
+    // Save current hunt ID
+    await storageService.setCurrentHuntId(state.currentHuntId)
+    
+    // Save preferences
+    savePreferences({
+      darkMode: state.darkMode,
+      theme: state.theme,
+    })
+    
+    console.log('[saveState] Save completed successfully')
+  } catch (error) {
+    console.error('[saveState] Failed to save state:', error)
+    throw error
+  }
+}
+
+/**
+ * Synchronous version for backward compatibility
+ * @deprecated Use async saveState() instead
+ * No longer saves to localStorage - hunts are in Supabase
+ */
+export function saveStateSync(state: AppState): void {
+  // No-op - hunts are now saved to Supabase via async saveState()
+  // Only preferences are saved to localStorage (handled separately)
 }
 
 function getDefaultState(): AppState {
@@ -74,6 +206,7 @@ function getDefaultState(): AppState {
     hunts: [],
     currentHuntId: null,
     darkMode: true,
+    theme: 'default',
     version: CURRENT_VERSION,
   }
 }
@@ -119,6 +252,7 @@ export function exportData(state: AppState): string {
     hunts: state.hunts,
     currentHuntId: state.currentHuntId,
     darkMode: state.darkMode,
+    theme: state.theme,
     version: CURRENT_VERSION,
     exportedAt: new Date().toISOString(),
   }
@@ -153,6 +287,7 @@ export function importData(json: string): AppState | null {
       hunts,
       currentHuntId: data.currentHuntId || null,
       darkMode: data.darkMode ?? true,
+      theme: (data.theme as ThemeId) || 'default',
       version: CURRENT_VERSION,
     }
   } catch (error) {

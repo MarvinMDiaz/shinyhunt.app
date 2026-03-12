@@ -5,18 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Pokemon } from '@/types'
 import { searchPokemon } from '@/lib/pokeapi'
+import { getGameById, loadGamesSync } from '@/lib/games'
+import { filterPokemonByGame } from '@/data/pokemonGameAvailability'
 
 interface PokemonSearchProps {
   selected: Pokemon | null
   onSelect: (pokemon: Pokemon) => void
+  gameId?: string // Optional game ID to filter Pokémon
 }
 
-export function PokemonSearch({ selected, onSelect }: PokemonSearchProps) {
+export function PokemonSearch({ selected, onSelect, gameId }: PokemonSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Pokemon[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<number | undefined>()
+  const games = loadGamesSync()
+  const selectedGame = gameId ? getGameById(games, gameId) : null
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -32,9 +37,15 @@ export function PokemonSearch({ selected, onSelect }: PokemonSearchProps) {
     setLoading(true)
     timeoutRef.current = setTimeout(async () => {
       const pokemon = await searchPokemon(query)
-      setResults(pokemon)
+      
+      // Filter by game availability if a game is selected
+      const filteredPokemon = selectedGame 
+        ? filterPokemonByGame(pokemon, selectedGame)
+        : pokemon
+      
+      setResults(filteredPokemon)
       setLoading(false)
-      setOpen(pokemon.length > 0)
+      setOpen(filteredPokemon.length > 0)
     }, 300)
 
     return () => {
@@ -42,7 +53,7 @@ export function PokemonSearch({ selected, onSelect }: PokemonSearchProps) {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [query])
+  }, [query, gameId, selectedGame])
 
   const handleSelect = (pokemon: Pokemon) => {
     onSelect(pokemon)
@@ -57,9 +68,9 @@ export function PokemonSearch({ selected, onSelect }: PokemonSearchProps) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Search by name or ID..."
+          placeholder="Search by name, dex #, or ID (e.g., 'pikachu', '#25', or '25')..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
           className="pl-9"
         />
       </div>
@@ -71,42 +82,33 @@ export function PokemonSearch({ selected, onSelect }: PokemonSearchProps) {
             </div>
           ) : results.length > 0 ? (
             <div className="p-2">
-              {results.map((pokemon) => (
+              {results.map((pokemon, index) => (
                 <Button
-                  key={pokemon.id}
+                  key={pokemon.formName || `${pokemon.id}-${index}`}
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() => handleSelect(pokemon)}
                 >
                   <img
                     src={pokemon.image}
-                    alt={pokemon.name}
+                    alt={pokemon.displayName || pokemon.name}
                     className="h-8 w-8 mr-2"
                   />
-                  <span className="capitalize">{pokemon.name}</span>
+                  <span className="capitalize">
+                    {pokemon.displayName || pokemon.name}
+                  </span>
                   <span className="ml-auto text-muted-foreground">#{pokemon.id}</span>
                 </Button>
               ))}
             </div>
           ) : (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              No Pokémon found
+              {selectedGame 
+                ? `No Pokémon found in ${selectedGame.name}` 
+                : 'No Pokémon found'}
             </div>
           )}
         </Card>
-      )}
-      {selected && (
-        <div className="mt-4 flex items-center gap-4">
-          <img
-            src={selected.image}
-            alt={selected.name}
-            className="h-24 w-24 object-contain"
-          />
-          <div>
-            <h3 className="text-lg font-semibold capitalize">{selected.name}</h3>
-            <p className="text-sm text-muted-foreground">#{selected.id}</p>
-          </div>
-        </div>
       )}
     </div>
   )

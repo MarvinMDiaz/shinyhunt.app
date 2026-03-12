@@ -2,9 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShinyHunt.app - Track Your Shiny Pokémon Journey</title>
+    
+    <!-- Favicons - Simplified to essential sizes only -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32-165.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon-165.png" />
+    <link rel="shortcut icon" href="/favicon-32-165.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/favicon-165.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#FFD700" />
+    
+    <!-- Default SEO Meta Tags (can be overridden by react-helmet-async) -->
+    <meta name="description" content="Free shiny hunt tracker for Pokémon. Track shiny hunts, calculate odds, monitor progress, and build your shiny collection. The best shiny hunting tracker for tracking Pokémon hunts across all generations." />
+    <meta name="keywords" content="shiny hunt tracker, pokemon shiny hunting tracker, shiny odds tracker, track pokemon hunts, shiny collection tracker, pokemon shiny tracker, shiny pokemon tracker, pokemon hunt tracker" />
+    <meta name="author" content="ShinyHunt.app" />
+    
+    <!-- Default Open Graph Tags -->
+    <meta property="og:site_name" content="ShinyHunt.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/logo.png" />
+    
+    <!-- Default Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/logo.png" />
+    
+    <title>Shiny Hunt Tracker | Pokémon Shiny Hunting Tracker | ShinyHunt.app</title>
+    
+    <style>
+      /* Ensure favicon displays properly */
+      link[rel="icon"] {
+        object-fit: contain;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

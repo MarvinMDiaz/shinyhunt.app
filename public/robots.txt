@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /tracker/*
+
+# Sitemap
+Sitemap: https://shinyhunt.app/sitemap.xml

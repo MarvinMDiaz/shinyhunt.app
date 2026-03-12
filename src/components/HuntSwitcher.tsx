@@ -19,6 +19,7 @@ interface HuntSwitcherProps {
   onRenameHunt: (id: string) => void
   onArchiveHunt: (id: string) => void
   onDeleteHunt: (id: string) => void
+  showNewHuntButton?: boolean // If true, show "New Hunt" in dropdown; if false, hide it (for desktop with separate button)
 }
 
 export function HuntSwitcher({
@@ -30,6 +31,7 @@ export function HuntSwitcher({
   onRenameHunt,
   onArchiveHunt,
   onDeleteHunt,
+  showNewHuntButton = true,
 }: HuntSwitcherProps) {
   const activeHunts = hunts.filter((h) => !h.archived && !h.completed)
   const currentHunt = hunts.find((h) => h.id === currentHuntId)
@@ -38,11 +40,11 @@ export function HuntSwitcher({
     <div className="flex items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-[200px] justify-between">
-            <span className="truncate">
-              {currentHunt?.name || 'Select a hunt...'}
+          <Button variant="outline" className="w-full min-w-[110px] md:min-w-[200px] max-w-full md:max-w-[280px] justify-between h-9 md:h-[46px] text-xs md:text-sm px-2.5 md:px-3.5">
+            <span className="truncate font-medium">
+              {currentHunt?.name || 'Select...'}
             </span>
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronDown className="ml-1.5 md:ml-2 h-3 w-3 md:h-4 md:w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]">
@@ -61,19 +63,23 @@ export function HuntSwitcher({
               </DropdownMenuItem>
             ))
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onCreateHunt}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Hunt
-          </DropdownMenuItem>
+          {showNewHuntButton && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onCreateHunt}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Hunt
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
       {currentHunt && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-[46px] w-[46px]">
+              <MoreVertical className="h-[21px] w-[21px]" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

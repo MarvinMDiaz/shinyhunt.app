@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ThemedCard } from '@/components/ThemedCard'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { HistoryEntry } from '@/types'
+import { ThemeId } from '@/lib/themes'
 import {
   aggregateHistoryByDay,
   buildMonthGrid,
@@ -15,9 +17,10 @@ import {
 
 interface SessionHeatMapCardProps {
   history: HistoryEntry[]
+  themeId?: ThemeId
 }
 
-export function SessionHeatMapCard({ history }: SessionHeatMapCardProps) {
+export function SessionHeatMapCard({ history, themeId = 'default' }: SessionHeatMapCardProps) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [viewMonth, setViewMonth] = useState(() => new Date().getMonth())
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear())
@@ -116,7 +119,7 @@ export function SessionHeatMapCard({ history }: SessionHeatMapCardProps) {
   }
 
   return (
-    <Card>
+    <ThemedCard themeId={themeId}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
@@ -270,6 +273,6 @@ export function SessionHeatMapCard({ history }: SessionHeatMapCardProps) {
           </div>
         )}
       </CardContent>
-    </Card>
+    </ThemedCard>
   )
 }

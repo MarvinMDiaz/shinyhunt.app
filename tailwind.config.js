@@ -43,14 +43,18 @@ export default {
         'bubble-rise': {
           '0%': { 
             transform: 'translateY(0) scale(0.8)',
+            opacity: '0.6',
+          },
+          '30%': { 
+            transform: 'translateY(-8px) scale(1.1)',
+            opacity: '0.8',
+          },
+          '60%': { 
+            transform: 'translateY(-16px) scale(1.0)',
             opacity: '0.7',
           },
-          '50%': { 
-            transform: 'translateY(-20px) scale(1.2)',
-            opacity: '0.9',
-          },
           '100%': { 
-            transform: 'translateY(-40px) scale(0.9)',
+            transform: 'translateY(-28px) scale(0.9)',
             opacity: '0',
           },
         },

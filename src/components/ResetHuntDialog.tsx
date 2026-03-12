@@ -71,7 +71,7 @@ export function ResetHuntDialog({
                     Reset Count Only
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Reset count to 0 and optionally clear history. Keeps Pokémon, method, odds, goal, and start date.
+                    Reset count to 0 and optionally clear history. Keeps Pokémon, target attempts, and start date.
                   </p>
                   {resetType === 'count-only' && (
                     <div className="pt-2 space-y-2">
@@ -118,7 +118,7 @@ export function ResetHuntDialog({
                           onCheckedChange={(checked) => setKeepSettings(checked === true)}
                         />
                         <Label htmlFor="keep-settings" className="text-sm font-normal cursor-pointer">
-                          Keep goal and odds settings
+                          Keep target attempts setting
                         </Label>
                       </div>
                     </div>

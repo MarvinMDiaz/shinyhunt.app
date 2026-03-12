@@ -1,219 +1,223 @@
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Sparkles, Trophy, BarChart3, Target } from 'lucide-react'
+import { ChevronDown, Sparkles, Trophy, BarChart3, Target, UserPlus, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { FloatingSparkles } from '@/components/FloatingSparkles'
+import { DarkModeToggle } from '@/components/DarkModeToggle'
+import { useAuth } from '@/context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { NavAvatar } from '@/components/NavAvatar'
+import { useState } from 'react'
+import { AccountSettings } from '@/components/AccountSettings'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 interface LandingPageProps {
   onStartHunting: () => void
+  onNavigateToTracker?: () => void
   onViewTrophyCase: () => void
   completedHuntsCount?: number
+  darkMode: boolean
+  onToggleDarkMode: () => void
 }
 
-// Region map images - you can replace these URLs with actual region map images
-// Options:
-// 1. Host your own images in /public/images/regions/ folder
-// 2. Use a CDN service
-// 3. Use Bulbapedia images (check licensing)
-const REGIONS = [
-  { 
-    name: 'Kanto', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/4/4a/Kanto_RB.png/800px-Kanto_RB.png',
-    fallbackGradient: 'from-blue-600 via-blue-500 to-blue-400' 
-  },
-  { 
-    name: 'Johto', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/7/7d/Johto_Map.png/800px-Johto_Map.png',
-    fallbackGradient: 'from-green-600 via-green-500 to-green-400' 
-  },
-  { 
-    name: 'Hoenn', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/8/8e/Hoenn_Map_RSE.png/800px-Hoenn_Map_RSE.png',
-    fallbackGradient: 'from-red-600 via-red-500 to-red-400' 
-  },
-  { 
-    name: 'Sinnoh', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/4/4c/Sinnoh_Map_DPPt.png/800px-Sinnoh_Map_DPPt.png',
-    fallbackGradient: 'from-purple-600 via-purple-500 to-purple-400' 
-  },
-  { 
-    name: 'Unova', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/9/9a/Unova_Map_BW.png/800px-Unova_Map_BW.png',
-    fallbackGradient: 'from-yellow-600 via-yellow-500 to-yellow-400' 
-  },
-  { 
-    name: 'Kalos', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/0/0a/Kalos_Map_XY.png/800px-Kalos_Map_XY.png',
-    fallbackGradient: 'from-pink-600 via-pink-500 to-pink-400' 
-  },
-  { 
-    name: 'Alola', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/1/1a/Alola_Map_SM.png/800px-Alola_Map_SM.png',
-    fallbackGradient: 'from-orange-600 via-orange-500 to-orange-400' 
-  },
-  { 
-    name: 'Galar', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/3/3a/Galar_Map.png/800px-Galar_Map.png',
-    fallbackGradient: 'from-indigo-600 via-indigo-500 to-indigo-400' 
-  },
-  { 
-    name: 'Paldea', 
-    image: 'https://archives.bulbagarden.net/media/upload/thumb/8/8a/Paldea_Map.png/800px-Paldea_Map.png',
-    fallbackGradient: 'from-teal-600 via-teal-500 to-teal-400' 
-  },
-]
+// Navigation bar for landing page - uses global auth state
+function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onToggleDarkMode }: {
+  onNavigateToTracker: () => void
+  onViewTrophyCase: () => void
+  darkMode: boolean
+  onToggleDarkMode: () => void
+}) {
+  const { isAuthenticated, loadingAuth, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
-function RegionSlideshow() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % REGIONS.length)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index)
+  const handleNavigateToLogin = () => {
+    navigate('/login')
   }
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + REGIONS.length) % REGIONS.length)
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/', { replace: true })
   }
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % REGIONS.length)
-  }
-
-  const handleImageError = (index: number) => {
-    setImageErrors((prev) => new Set(prev).add(index))
-  }
-
-  const currentRegion = REGIONS[currentIndex]
-  const useFallback = imageErrors.has(currentIndex)
-
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0"
-        >
-          {useFallback ? (
-            <div className={`absolute inset-0 bg-gradient-to-br ${currentRegion.fallbackGradient} md:blur-0 blur-sm`}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/80" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-white/20 text-4xl md:text-8xl font-bold select-none">
-                  {currentRegion.name}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <img
-                src={currentRegion.image}
-                alt={`${currentRegion.name} region map`}
-                className="w-full h-full object-cover md:blur-0 blur-sm"
-                onError={() => handleImageError(currentIndex)}
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/80" />
-            </>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all backdrop-blur-sm"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all backdrop-blur-sm"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
-
-      {/* Dots Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {REGIONS.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === currentIndex
-                ? 'w-8 bg-white'
-                : 'w-2 bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
+    <nav className="absolute top-0 left-0 right-0 z-50 px-4 sm:px-6 py-2 md:py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Logo - Match tracker app navbar size */}
+        <div className="flex items-center">
+          <img
+            src="/logo.png"
+            alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker"
+            className="h-[59px] md:h-[135px] lg:h-[172px] w-auto"
           />
-        ))}
+        </div>
+
+        {/* Navigation buttons */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNavigateToTracker}
+            className="text-white hover:text-yellow-400 hover:bg-white/10 h-9 md:h-10 text-sm md:text-base"
+          >
+            <Target className="h-4 w-4 md:h-5 md:w-5 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Tracker</span>
+            <span className="sm:hidden">Tracker</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onViewTrophyCase}
+            className="text-white hover:text-yellow-400 hover:bg-white/10 h-9 md:h-10 text-sm md:text-base"
+          >
+            <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Trophy Case</span>
+            <span className="sm:hidden">Trophy</span>
+          </Button>
+          {/* Auth buttons - show based on global auth state */}
+          {!loadingAuth && !isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNavigateToLogin}
+              className="text-white hover:text-yellow-400 hover:bg-white/10 h-9 md:h-10 text-sm md:text-base"
+            >
+              <LogIn className="h-4 w-4 md:h-5 md:w-5 mr-1.5 sm:mr-2" />
+              <span className="hidden sm:inline">Sign In</span>
+              <span className="sm:hidden">Sign In</span>
+            </Button>
+          )}
+          
+          {/* Profile avatar - show when authenticated */}
+          {!loadingAuth && isAuthenticated && (
+            <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+              <DialogTrigger asChild>
+                <NavAvatar
+                  onClick={() => setSettingsDialogOpen(true)}
+                  className="h-9 w-9 md:h-10 md:w-10"
+                  size="md"
+                />
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <AccountSettings onSignOut={handleSignOut} />
+              </DialogContent>
+            </Dialog>
+          )}
+          <div className="relative" style={{ zIndex: 9999 }}>
+            <DarkModeToggle
+              key={`dark-mode-${darkMode}`}
+              darkMode={darkMode}
+              onToggle={() => {
+                console.log('LandingNavBar: onToggleDarkMode called')
+                console.log('Current darkMode prop:', darkMode)
+                console.log('Calling onToggleDarkMode function...')
+                onToggleDarkMode()
+                console.log('onToggleDarkMode function called')
+              }}
+            />
+          </div>
+        </div>
       </div>
+    </nav>
+  )
+}
+
+// Branded background with Sinnoh-inspired purple and ShinyHunt brand colors
+function BrandedBackground() {
+  return (
+    <div className="absolute inset-0 overflow-hidden z-0">
+      {/* Base gradient - Sinnoh purple blended with brand colors */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800" />
+      
+      {/* Animated gradient overlays with brand colors - subtle */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, transparent 50%, rgba(0, 206, 209, 0.05) 100%',
+        }}
+        animate={{
+          backgroundPosition: ['0% 0%', '100% 100%'],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          repeatType: 'reverse',
+        }}
+      />
+      
+      {/* Animated golden orb - subtle */}
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl"
+        style={{
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.08), transparent)',
+        }}
+        animate={{
+          x: [0, 30, 0],
+          y: [0, 20, 0],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          repeatType: 'reverse',
+        }}
+      />
+      
+      {/* Animated cyan orb - subtle */}
+      <motion.div
+        className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 206, 209, 0.08), transparent)',
+        }}
+        animate={{
+          x: [0, -30, 0],
+          y: [0, -20, 0],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          repeatType: 'reverse',
+        }}
+      />
+      
+      {/* Additional shimmer effect - very subtle */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.03) 50%, transparent 70%)',
+          backgroundSize: '200% 200%',
+        }}
+        animate={{
+          backgroundPosition: ['0% 0%', '200% 200%'],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: 'linear',
+        }}
+      />
+      
+      {/* Dark overlay for text readability - stronger */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/75 to-black/85" />
     </div>
   )
 }
 
-function FloatingSparkles() {
-  const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 })
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
-
-    updateDimensions()
-    window.addEventListener('resize', updateDimensions)
-    return () => window.removeEventListener('resize', updateDimensions)
-  }, [])
-
+export function LandingPage({ onStartHunting, onNavigateToTracker, onViewTrophyCase, completedHuntsCount = 0, darkMode, onToggleDarkMode }: LandingPageProps) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-yellow-400 rounded-full"
-          initial={{
-            x: Math.random() * dimensions.width,
-            y: Math.random() * dimensions.height,
-            opacity: 0,
-          }}
-          animate={{
-            y: [null, Math.random() * dimensions.height],
-            opacity: [0, 1, 0],
-            scale: [0, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
+    <div className="min-h-screen bg-background relative">
+      {/* Navigation Bar */}
+      <LandingNavBar
+        onNavigateToTracker={onNavigateToTracker || onStartHunting}
+        onViewTrophyCase={onViewTrophyCase}
+        darkMode={darkMode}
+        onToggleDarkMode={onToggleDarkMode}
+      />
 
-export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCount = 0 }: LandingPageProps) {
-  return (
-    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <RegionSlideshow />
-        <FloatingSparkles />
+        <BrandedBackground />
+        <FloatingSparkles goldCount={20} cyanCount={15} themeId="default" />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <motion.div
@@ -222,39 +226,91 @@ export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCo
             transition={{ duration: 0.8 }}
             className="mb-6"
           >
-            <div className="flex flex-col items-center justify-center gap-4 mb-4">
-              <img 
-                src="/logo.png" 
-                alt="ShinyHunt.app" 
-                className="h-56 md:h-72 lg:h-96 w-auto drop-shadow-2xl"
-              />
+            <div className="flex flex-col items-center justify-center gap-6 mb-6">
+              <h1 className="sr-only">ShinyHunt.app - Track Your Shiny Pokémon Journey</h1>
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+                className="relative"
+              >
+                {/* Multiple glow layers for shiny effect - subtle */}
+                <motion.div
+                  className="absolute inset-0 -z-10 blur-3xl"
+                  animate={{
+                    opacity: [0.15, 0.25, 0.15],
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <div className="w-full h-full bg-gradient-to-r from-yellow-400/30 via-cyan-400/30 to-yellow-400/30 rounded-full" />
+                </motion.div>
+                
+                <motion.div
+                  className="absolute inset-0 -z-10 blur-2xl"
+                  animate={{
+                    opacity: [0.2, 0.3, 0.2],
+                    scale: [1, 1.03, 1],
+                  }}
+                  transition={{
+                    duration: 3.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.5,
+                  }}
+                >
+                  <div className="w-full h-full bg-gradient-to-r from-cyan-400/30 via-yellow-400/30 to-cyan-400/30 rounded-full" />
+                </motion.div>
+                
+                {/* Logo with subtle drop shadow */}
+                <img 
+                  src="/logo.png" 
+                  alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker Logo" 
+                  className="h-56 md:h-72 lg:h-96 w-auto relative z-10"
+                  style={{
+                    filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.3)) drop-shadow(0 0 10px rgba(0, 206, 209, 0.2))',
+                  }}
+                />
+              </motion.div>
             </div>
-            <p className="text-xl md:text-2xl text-white/90 drop-shadow-lg mb-8">
+            <p className="text-xl md:text-2xl text-white/95 drop-shadow-lg mb-8 font-medium">
               Track your shiny hunts, calculate your odds, and build your trophy case.
             </p>
+            
+            {/* SEO-friendly crawlable text */}
+            <div className="sr-only">
+              <p>
+                ShinyHunt.app is a free Pokémon shiny hunt tracker designed for shiny hunters. 
+                Track shiny hunts across all Pokémon generations, calculate shiny odds, monitor your progress, 
+                and build your shiny collection. Our shiny hunting tracker helps you track Pokémon hunts 
+                with real-time statistics, probability calculations, and milestone tracking. 
+                Whether you're hunting in Pokémon Red, Blue, Gold, Silver, Ruby, Sapphire, Diamond, Pearl, 
+                Black, White, X, Y, Sun, Moon, Sword, Shield, Scarlet, Violet, or any other game, 
+                ShinyHunt.app is the best shiny collection tracker for tracking your shiny Pokémon journey.
+              </p>
+            </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col items-center"
           >
             <Button
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all"
+              className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white border-0 text-lg px-8 py-6 h-auto shadow-lg hover:shadow-2xl transition-all font-semibold"
               onClick={onStartHunting}
+              style={{
+                boxShadow: '0 4px 20px rgba(0, 206, 209, 0.4), 0 0 30px rgba(0, 206, 209, 0.2)',
+              }}
             >
+              <Sparkles className="h-5 w-5 mr-2" />
               Start Hunting
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white/10 hover:bg-white/20 text-white border-white/30 text-lg px-8 py-6 h-auto backdrop-blur-sm shadow-lg hover:shadow-xl transition-all"
-              onClick={onViewTrophyCase}
-            >
-              <Trophy className="h-5 w-5 mr-2" />
-              View Trophy Case
             </Button>
           </motion.div>
         </div>
@@ -269,15 +325,45 @@ export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCo
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="text-white/70"
+            className="text-white/80"
+            style={{
+              filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.6))',
+            }}
           >
             <ChevronDown className="h-6 w-6" />
           </motion.div>
         </motion.div>
       </section>
 
+      {/* SEO Content Section - Visible crawlable text */}
+      <section className="py-16 px-4 bg-background/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <article>
+            <h2 className="text-3xl font-bold mb-6">The Best Shiny Hunt Tracker for Pokémon</h2>
+            <div className="prose prose-lg mx-auto text-muted-foreground space-y-4">
+              <p>
+                <strong>ShinyHunt.app</strong> is a free, powerful <strong>Pokémon shiny hunting tracker</strong> that helps you track shiny hunts, 
+                calculate odds, monitor progress, and build your shiny collection. Whether you're hunting for shiny starters, 
+                legendary Pokémon, or your favorite species, our <strong>shiny odds tracker</strong> provides everything you need 
+                to track Pokémon hunts effectively.
+              </p>
+              <p>
+                Our <strong>shiny collection tracker</strong> features real-time probability calculations, progress visualization, 
+                and milestone tracking. Track multiple shiny hunts simultaneously, monitor your encounter counts, 
+                and celebrate your successes in your personal trophy case. Perfect for shiny hunters across all generations 
+                from Gen 1 to Gen 10.
+              </p>
+              <p>
+                Start tracking your shiny hunts today with the most comprehensive <strong>shiny hunt tracker</strong> available. 
+                Free to use, no downloads required, and works on all devices.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
       {/* Feature Highlights */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-20 px-4 bg-background" aria-labelledby="features-heading">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -286,7 +372,7 @@ export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCo
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
+            <h2 id="features-heading" className="text-4xl font-bold mb-4">Powerful Features for Shiny Hunters</h2>
             <p className="text-muted-foreground text-lg">
               Everything you need to track your shiny Pokémon journey
             </p>
@@ -296,18 +382,18 @@ export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCo
             {[
               {
                 icon: Target,
-                title: 'Track Hunts',
-                description: 'Monitor multiple hunts simultaneously with detailed progress tracking and history logs.',
+                title: 'Track Shiny Hunts',
+                description: 'Monitor multiple shiny hunts simultaneously with detailed progress tracking, encounter counts, and history logs. Perfect for tracking Pokémon hunts across all games.',
               },
               {
                 icon: BarChart3,
-                title: 'Probability Stats',
-                description: 'Calculate your odds, expected attempts, and confidence intervals with real-time statistics.',
+                title: 'Shiny Odds Calculator',
+                description: 'Calculate your shiny odds, expected attempts, and confidence intervals with real-time statistics. Our shiny odds tracker helps you understand your probability of success.',
               },
               {
                 icon: Trophy,
-                title: 'Trophy Case',
-                description: 'Showcase your completed shiny hunts in a beautiful trophy case with detailed achievements.',
+                title: 'Shiny Collection Tracker',
+                description: 'Build and showcase your shiny collection in a beautiful trophy case. Track milestones, achievements, and celebrate your shiny hunting successes.',
               },
             ].map((feature, index) => (
               <motion.div
@@ -344,17 +430,17 @@ export function LandingPage({ onStartHunting, onViewTrophyCase, completedHuntsCo
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <h2 className="text-4xl font-bold mb-4">How to Track Your Shiny Hunts</h2>
             <p className="text-muted-foreground text-lg">
-              Start tracking in three simple steps
+              Start tracking your Pokémon shiny hunts in three simple steps
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '1', title: 'Choose your Pokémon', description: 'Search and select the Pokémon you want to hunt.' },
-              { step: '2', title: 'Track encounters/resets', description: 'Use the counter buttons or set your count directly.' },
-              { step: '3', title: 'Celebrate your shiny', description: 'Mark as completed and add it to your trophy case!' },
+              { step: '1', title: 'Choose Your Pokémon', description: 'Search and select the Pokémon you want to hunt. Our shiny hunt tracker supports all Pokémon from Gen 1 to Gen 10.' },
+              { step: '2', title: 'Track Encounters', description: 'Use the counter buttons or set your encounter count directly. Monitor your progress in real-time as you hunt.' },
+              { step: '3', title: 'Build Your Collection', description: 'Mark your shiny as completed and add it to your shiny collection tracker. Celebrate milestones and achievements!' },
             ].map((item, index) => (
               <motion.div
                 key={item.step}

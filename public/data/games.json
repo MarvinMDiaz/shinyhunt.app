@@ -1,0 +1,260 @@
+[
+  {
+    "id": "red",
+    "name": "Red",
+    "generation": 1,
+    "platform": "Game Boy",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4b/Pokemon_Red_Logo_EN.png/200px-Pokemon_Red_Logo_EN.png"
+  },
+  {
+    "id": "blue",
+    "name": "Blue",
+    "generation": 1,
+    "platform": "Game Boy",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4b/Pokemon_Red_Logo_EN.png/200px-Pokemon_Red_Logo_EN.png"
+  },
+  {
+    "id": "gold",
+    "name": "Gold",
+    "generation": 2,
+    "platform": "Game Boy Color",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Gold_Logo_EN.png/200px-Pokemon_Gold_Logo_EN.png"
+  },
+  {
+    "id": "silver",
+    "name": "Silver",
+    "generation": 2,
+    "platform": "Game Boy Color",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Gold_Logo_EN.png/200px-Pokemon_Gold_Logo_EN.png"
+  },
+  {
+    "id": "ruby",
+    "name": "Ruby",
+    "generation": 3,
+    "platform": "Game Boy Advance",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Ruby_Logo_EN.png/200px-Pokemon_Ruby_Logo_EN.png"
+  },
+  {
+    "id": "sapphire",
+    "name": "Sapphire",
+    "generation": 3,
+    "platform": "Game Boy Advance",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Ruby_Logo_EN.png/200px-Pokemon_Ruby_Logo_EN.png"
+  },
+  {
+    "id": "fire_red",
+    "name": "FireRed",
+    "generation": 3,
+    "platform": "Game Boy Advance",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/0/0d/FireRed_LeafGreen_logo.png/200px-FireRed_LeafGreen_logo.png"
+  },
+  {
+    "id": "leaf_green",
+    "name": "LeafGreen",
+    "generation": 3,
+    "platform": "Game Boy Advance",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/0/0d/FireRed_LeafGreen_logo.png/200px-FireRed_LeafGreen_logo.png"
+  },
+  {
+    "id": "emerald",
+    "name": "Emerald",
+    "generation": 3,
+    "platform": "Game Boy Advance",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Emerald_Logo_EN.png/200px-Pokemon_Emerald_Logo_EN.png"
+  },
+  {
+    "id": "diamond",
+    "name": "Diamond",
+    "generation": 4,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7d/Pokemon_Diamond_Logo_EN.png/200px-Pokemon_Diamond_Logo_EN.png"
+  },
+  {
+    "id": "pearl",
+    "name": "Pearl",
+    "generation": 4,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7d/Pokemon_Diamond_Logo_EN.png/200px-Pokemon_Diamond_Logo_EN.png"
+  },
+  {
+    "id": "platinum",
+    "name": "Platinum",
+    "generation": 4,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/5/5a/Pokemon_Platinum_Logo_EN.png/200px-Pokemon_Platinum_Logo_EN.png"
+  },
+  {
+    "id": "heartgold",
+    "name": "HeartGold",
+    "generation": 4,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_HeartGold_Logo_EN.png/200px-Pokemon_HeartGold_Logo_EN.png"
+  },
+  {
+    "id": "soulsilver",
+    "name": "SoulSilver",
+    "generation": 4,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_HeartGold_Logo_EN.png/200px-Pokemon_HeartGold_Logo_EN.png"
+  },
+  {
+    "id": "black",
+    "name": "Black",
+    "generation": 5,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4f/Pokemon_Black_Logo_EN.png/200px-Pokemon_Black_Logo_EN.png"
+  },
+  {
+    "id": "white",
+    "name": "White",
+    "generation": 5,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4f/Pokemon_Black_Logo_EN.png/200px-Pokemon_Black_Logo_EN.png"
+  },
+  {
+    "id": "black2",
+    "name": "Black 2",
+    "generation": 5,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4f/Pokemon_Black_Logo_EN.png/200px-Pokemon_Black_Logo_EN.png"
+  },
+  {
+    "id": "white2",
+    "name": "White 2",
+    "generation": 5,
+    "platform": "Nintendo DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4f/Pokemon_Black_Logo_EN.png/200px-Pokemon_Black_Logo_EN.png"
+  },
+  {
+    "id": "x",
+    "name": "X",
+    "generation": 6,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/3/3a/Pokemon_X_Logo_EN.png/200px-Pokemon_X_Logo_EN.png"
+  },
+  {
+    "id": "y",
+    "name": "Y",
+    "generation": 6,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/3/3a/Pokemon_X_Logo_EN.png/200px-Pokemon_X_Logo_EN.png"
+  },
+  {
+    "id": "omega_ruby",
+    "name": "Omega Ruby",
+    "generation": 6,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Ruby_Logo_EN.png/200px-Pokemon_Ruby_Logo_EN.png"
+  },
+  {
+    "id": "alpha_sapphire",
+    "name": "Alpha Sapphire",
+    "generation": 6,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Ruby_Logo_EN.png/200px-Pokemon_Ruby_Logo_EN.png"
+  },
+  {
+    "id": "sun",
+    "name": "Sun",
+    "generation": 7,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Sun_Logo_EN.png/200px-Pokemon_Sun_Logo_EN.png"
+  },
+  {
+    "id": "moon",
+    "name": "Moon",
+    "generation": 7,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Sun_Logo_EN.png/200px-Pokemon_Sun_Logo_EN.png"
+  },
+  {
+    "id": "ultra_sun",
+    "name": "Ultra Sun",
+    "generation": 7,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Sun_Logo_EN.png/200px-Pokemon_Sun_Logo_EN.png"
+  },
+  {
+    "id": "ultra_moon",
+    "name": "Ultra Moon",
+    "generation": 7,
+    "platform": "Nintendo 3DS",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Sun_Logo_EN.png/200px-Pokemon_Sun_Logo_EN.png"
+  },
+  {
+    "id": "lets_go_pikachu",
+    "name": "Let's Go Pikachu",
+    "generation": 7,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Let%27s_Go_Pikachu_logo.png/200px-Pokemon_Let%27s_Go_Pikachu_logo.png"
+  },
+  {
+    "id": "lets_go_eevee",
+    "name": "Let's Go Eevee",
+    "generation": 7,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Pokemon_Let%27s_Go_Pikachu_logo.png/200px-Pokemon_Let%27s_Go_Pikachu_logo.png"
+  },
+  {
+    "id": "sword",
+    "name": "Sword",
+    "generation": 8,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Sword_Logo_EN.png/200px-Pokemon_Sword_Logo_EN.png"
+  },
+  {
+    "id": "shield",
+    "name": "Shield",
+    "generation": 8,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Sword_Logo_EN.png/200px-Pokemon_Sword_Logo_EN.png"
+  },
+  {
+    "id": "brilliant_diamond",
+    "name": "Brilliant Diamond",
+    "generation": 8,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7d/Pokemon_Diamond_Logo_EN.png/200px-Pokemon_Diamond_Logo_EN.png"
+  },
+  {
+    "id": "shining_pearl",
+    "name": "Shining Pearl",
+    "generation": 8,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7d/Pokemon_Diamond_Logo_EN.png/200px-Pokemon_Diamond_Logo_EN.png"
+  },
+  {
+    "id": "legends_arceus",
+    "name": "Legends Arceus",
+    "generation": 8,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Legends_Arceus_logo.png/200px-Pokemon_Legends_Arceus_logo.png"
+  },
+  {
+    "id": "scarlet",
+    "name": "Scarlet",
+    "generation": 9,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Scarlet_Logo_EN.png/200px-Pokemon_Scarlet_Logo_EN.png"
+  },
+  {
+    "id": "violet",
+    "name": "Violet",
+    "generation": 9,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/7/7a/Pokemon_Scarlet_Logo_EN.png/200px-Pokemon_Scarlet_Logo_EN.png"
+  },
+  {
+    "id": "legends_za",
+    "name": "Legends Z-A",
+    "generation": 10,
+    "platform": "Nintendo Switch",
+    "bulbaLogo": "https://archives.bulbagarden.net/media/upload/thumb/4/4e/Pokemon_Legends_Arceus_logo.png/200px-Pokemon_Legends_Arceus_logo.png"
+  },
+  {
+    "id": "pokopia",
+    "name": "Pokémon Pokopia",
+    "generation": 10,
+    "platform": "Nintendo Switch"
+  }
+]

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -66,4 +72,193 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Shiny sparkle animation for First 151 Trainer badge */
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) rotate(360deg);
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle 600ms ease-in-out;
+}
+
+/* Shiny glow pulse animation for profile avatar */
+@keyframes shiny-glow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-shiny-glow {
+  animation: shiny-glow 3s ease-in-out infinite;
+}
+
+/* Shiny aura sweep animation */
+@keyframes shiny-sweep {
+  0% {
+    transform: rotate(0deg) translateX(-50%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: rotate(360deg) translateX(-50%);
+    opacity: 0;
+  }
+}
+
+.animate-shiny-sweep {
+  animation: shiny-sweep 4s linear infinite;
+}
+
+/* Pokémon shiny sparkle animation - three sparkles */
+@keyframes pokemon-shiny-sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1) rotate(360deg);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.1) rotate(540deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(720deg);
+  }
+}
+
+.animate-pokemon-sparkle {
+  animation: pokemon-shiny-sparkle 800ms ease-out;
+}
+
+/* Lava lamp animations for progress bar */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0.6;
+  }
+  30% {
+    transform: translateY(-8px) scale(1.1);
+    opacity: 0.8;
+  }
+  60% {
+    transform: translateY(-16px) scale(1.0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-28px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Pokémon shiny sparkle burst for achievement badges - triggers every 3 seconds */
+@keyframes pokemon-shiny-sparkle-burst {
+  0%, 93% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  94% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  95% {
+    opacity: 1;
+    transform: scale(1.2) rotate(45deg);
+  }
+  96% {
+    opacity: 1;
+    transform: scale(1.4) rotate(90deg);
+  }
+  97% {
+    opacity: 0.9;
+    transform: scale(1.3) rotate(135deg);
+  }
+  98% {
+    opacity: 0.5;
+    transform: scale(1.1) rotate(180deg);
+  }
+  99% {
+    opacity: 0.2;
+    transform: scale(0.8) rotate(225deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(270deg);
+  }
+}
+
+/* Badge floating animation - very subtle vertical movement */
+@keyframes badge-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Rising sparkles from podium */
+@keyframes sparkle-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  90% {
+    opacity: 0.8;
+    transform: translateY(-80px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.5);
+  }
+}
+
+/* Hide scrollbar but allow scrolling - Account Settings modal */
+.settings-scroll-container {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+}
+
+.settings-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
 }
