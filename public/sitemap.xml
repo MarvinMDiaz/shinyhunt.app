@@ -31,4 +31,17 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+  <!-- Guides page -->
+  <url>
+    <loc>https://www.shinyhunt.app/guides</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
+
+<!-- 
+  Note: Pokémon-specific pages are included in sitemap-pokemon.xml
+  For full SEO coverage, include all Pokémon pages dynamically.
+  Popular Pokémon pages are included in sitemap-pokemon.xml
+-->

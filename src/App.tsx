@@ -4,6 +4,8 @@ import { LoginPage } from '@/pages/LoginPage'
 import { SignupPage } from '@/pages/SignupPage'
 import { HomePage } from '@/pages/HomePage'
 import { AdminDashboard } from '@/pages/AdminDashboard'
+import { PokemonHuntPage } from '@/pages/PokemonHuntPage'
+import { GuidesPage } from '@/pages/GuidesPage'
 import { AdminGuard } from '@/components/AdminGuard'
 import { Toaster } from '@/components/ui/toaster'
 
@@ -17,6 +19,8 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/tracker" element={<TrackerApp />} />
         <Route path="/tracker/*" element={<TrackerApp />} />
+        <Route path="/pokemon/:pokemon-name-shiny-hunt" element={<PokemonHuntPage />} />
+        <Route path="/guides" element={<GuidesPage />} />
         <Route
           path="/admin"
           element={

@@ -24,11 +24,20 @@ export function parseOdds(input: string): number {
 }
 
 export function formatOdds(odds: number): string {
+  if (odds <= 0 || odds > 1) return 'N/A'
+  if (odds === 1) return '1/1'
+  
   // Try to find a common fraction representation
   const commonOdds = [
-    { value: 1/4096, display: '1/4096' },
-    { value: 1/2048, display: '1/2048' },
+    { value: 1/100, display: '1/100' },
+    { value: 1/158, display: '1/158' },
+    { value: 1/512, display: '1/512' },
+    { value: 1/683, display: '1/683' },
+    { value: 1/819, display: '1/819' },
+    { value: 1/1024, display: '1/1024' },
     { value: 1/1365, display: '1/1365' },
+    { value: 1/2048, display: '1/2048' },
+    { value: 1/4096, display: '1/4096' },
     { value: 1/8192, display: '1/8192' },
   ]
   
@@ -38,7 +47,9 @@ export function formatOdds(odds: number): string {
     }
   }
   
-  return odds.toFixed(6)
+  // Calculate approximate fraction
+  const denominator = Math.round(1 / odds)
+  return `1/${denominator.toLocaleString()}`
 }
 
 export function calculateProbability(odds: number, attempts: number): number {

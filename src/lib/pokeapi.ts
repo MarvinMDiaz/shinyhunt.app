@@ -6,20 +6,23 @@ const API_BASE = 'https://pokeapi.co/api/v2'
 
 export async function fetchPokemon(idOrName: string | number, formName?: string): Promise<Pokemon | null> {
   try {
-    const id = typeof idOrName === 'string' ? parseInt(idOrName, 10) : idOrName
+    // Determine if input is a number (ID) or string (name)
+    const isNumeric = typeof idOrName === 'number' || (typeof idOrName === 'string' && !isNaN(Number(idOrName)) && idOrName.trim() !== '')
+    const id = isNumeric ? (typeof idOrName === 'string' ? parseInt(idOrName, 10) : idOrName) : null
     
-    // Check cache first
-    const cache = getPokemonCache()
-    // For forms, we'll cache separately but use base ID for now
-    const cached = cache.get(id)
-    if (cached) {
-      return {
-        id: cached.id,
-        name: cached.name,
-        image: cached.image,
-        shinyImage: (cached as any).shinyImage,
-        formName: (cached as any).formName,
-        displayName: (cached as any).displayName,
+    // Check cache first (only if we have a valid ID)
+    if (id !== null && !isNaN(id)) {
+      const cache = getPokemonCache()
+      const cached = cache.get(id)
+      if (cached) {
+        return {
+          id: cached.id,
+          name: cached.name,
+          image: cached.image,
+          shinyImage: (cached as any).shinyImage,
+          formName: (cached as any).formName,
+          displayName: (cached as any).displayName,
+        }
       }
     }
     
@@ -83,12 +86,13 @@ export async function fetchPokemon(idOrName: string | number, formName?: string)
     }
     
     // Cache the result (cache by base ID, forms will be fetched fresh)
-    if (!formName) {
+    if (!formName && pokemon.id) {
+      const cache = getPokemonCache()
       const cachedPokemon: CachedPokemon & { shinyImage?: string; formName?: string; displayName?: string } = {
         ...pokemon,
         cachedAt: Date.now(),
       }
-      cache.set(id, cachedPokemon)
+      cache.set(pokemon.id, cachedPokemon)
       savePokemonCache(cache)
     }
     

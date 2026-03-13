@@ -1,4 +1,4 @@
-import { ChevronDown, Sparkles, Trophy, BarChart3, Target, LogIn } from 'lucide-react'
+import { ChevronDown, Sparkles, Trophy, BarChart3, Target, LogIn, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -30,6 +30,7 @@ function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onTogg
   const { isAuthenticated, loadingAuth, signOut } = useAuth()
   const navigate = useNavigate()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const location = typeof window !== 'undefined' ? window.location.pathname : ''
 
   const handleNavigateToLogin = () => {
     navigate('/login')
@@ -73,6 +74,18 @@ function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onTogg
             <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-1.5 sm:mr-2" />
             <span className="hidden sm:inline">Trophy Case</span>
             <span className="sm:hidden">Trophy</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/guides')}
+            className={`text-white hover:text-yellow-400 hover:bg-white/10 h-9 md:h-10 text-sm md:text-base ${
+              location === '/guides' ? 'bg-white/20' : ''
+            }`}
+          >
+            <BookOpen className="h-4 w-4 md:h-5 md:w-5 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Guides</span>
+            <span className="sm:hidden">Guides</span>
           </Button>
           {/* Auth buttons - show based on global auth state */}
           {!loadingAuth && !isAuthenticated && (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, LogIn, UserPlus, Loader2, MoreVertical } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Plus, LogIn, UserPlus, Loader2, MoreVertical, BookOpen } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { HuntSwitcher } from '@/components/HuntSwitcher'
 import { CreateHuntDialog } from '@/components/CreateHuntDialog'
@@ -54,6 +54,8 @@ export function TrackerApp() {
   const [isLoading, setIsLoading] = useState(true)
   const { user, isAuthenticated, loadingAuth, signOut } = useAuth()
   const { loadingProfile, refreshProfile } = useUserProfile()
+  const navigate = useNavigate()
+  const location = useLocation()
   
   // Track previous user ID to detect user changes
   const previousUserIdRef = useRef<string | null>(null)
@@ -315,7 +317,6 @@ export function TrackerApp() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [showFirst151Popup, setShowFirst151Popup] = useState(false)
   const { toast } = useToast()
-  const navigate = useNavigate()
 
   // Handle logout - comprehensive cleanup
   const handleLogout = async () => {
@@ -890,6 +891,20 @@ export function TrackerApp() {
                   onThemeChange={(theme) => updateState({ theme })}
                 />
               </div>
+              
+              {/* Guides Button - Always visible */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/guides')}
+                className={`hidden sm:flex h-9 md:h-[46px] px-3 md:px-4 text-xs md:text-sm transition-all duration-200 ${
+                  location.pathname === '/guides' ? 'bg-accent' : ''
+                }`}
+                title="Shiny Hunting Guides"
+              >
+                <BookOpen className="h-[12.4px] w-[12.4px] md:h-[16.5px] md:w-[16.5px] mr-1 md:mr-2" />
+                Guides
+              </Button>
               
               {/* Dark Mode Toggle - Always visible */}
               <DarkModeToggle

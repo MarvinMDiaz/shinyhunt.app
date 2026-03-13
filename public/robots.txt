@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /pokemon/
 
 Sitemap: https://www.shinyhunt.app/sitemap.xml
+Sitemap: https://www.shinyhunt.app/sitemap-pokemon.xml
