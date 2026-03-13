@@ -5,23 +5,30 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <!-- Homepage - Main entry point for shiny hunt tracker -->
   <url>
-    <loc>https://shinyhunt.app/</loc>
-    <lastmod>2026-03-11</lastmod>
+    <loc>https://www.shinyhunt.app/</loc>
+    <lastmod>2026-03-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-  <!-- Login page -->
+  <!-- Tracker - Main shiny hunting tracker page -->
   <url>
-    <loc>https://shinyhunt.app/login</loc>
-    <lastmod>2026-03-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <loc>https://www.shinyhunt.app/tracker</loc>
+    <lastmod>2026-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <!-- Signup page -->
   <url>
-    <loc>https://shinyhunt.app/signup</loc>
-    <lastmod>2026-03-11</lastmod>
+    <loc>https://www.shinyhunt.app/signup</loc>
+    <lastmod>2026-03-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <!-- Login page -->
+  <url>
+    <loc>https://www.shinyhunt.app/login</loc>
+    <lastmod>2026-03-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>

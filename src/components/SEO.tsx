@@ -11,9 +11,9 @@ interface SEOProps {
   nofollow?: boolean
 }
 
-const SITE_NAME = 'ShinyHunt.app'
-const DEFAULT_DESCRIPTION = 'Free Pokémon shiny hunt tracker. Track shiny hunts, calculate odds, monitor progress, and build your shiny collection. The best shiny hunting tracker for all Pokémon generations.'
-const DEFAULT_OG_IMAGE = '/logo.png'
+const SITE_NAME = 'ShinyHunt'
+const DEFAULT_DESCRIPTION = 'Track your Pokémon shiny hunts, reset counters, and build your shiny Pokédex. The ultimate shiny hunting tracker for Pokémon games.'
+const DEFAULT_OG_IMAGE = '/og-image.png'
 // Canonical domain: use www.shinyhunt.app as primary production domain
 const CANONICAL_DOMAIN = 'https://www.shinyhunt.app'
 
@@ -47,6 +47,9 @@ export function SEO({
   if (noindex) robotsContent.push('noindex')
   if (nofollow) robotsContent.push('nofollow')
   if (robotsContent.length === 0) robotsContent.push('index', 'follow')
+  
+  // Add JSON-LD structured data for homepage
+  const isHomepage = url === CANONICAL_DOMAIN || url === `${CANONICAL_DOMAIN}/`
 
   return (
     <Helmet>
@@ -73,13 +76,31 @@ export function SEO({
       <meta name="twitter:image" content={imageUrl} />
 
       {/* Additional SEO */}
-      <meta name="keywords" content="shiny hunt tracker, pokemon shiny hunting tracker, shiny odds tracker, track pokemon hunts, shiny collection tracker, pokemon shiny tracker, shiny pokemon tracker, pokemon hunt tracker" />
+      <meta name="keywords" content="pokemon shiny hunt tracker, shiny counter, shiny hunting tracker, pokemon reset counter, track shiny pokemon, shiny dex, pokemon shiny tracker, shiny pokemon tracker" />
       <meta name="theme-color" content="#FFD700" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       
       {/* Google Search Console Verification */}
       <meta name="google-site-verification" content="mIVHQe5sWLG72_3Z9Kw1X9-DkyO9nioEK5sL0dbeTLE" />
+      
+      {/* JSON-LD Structured Data for homepage */}
+      {isHomepage && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "ShinyHunt",
+            "url": CANONICAL_DOMAIN,
+            "description": "Track your Pokémon shiny hunts, reset counters, and build your shiny Pokédex. The ultimate shiny hunting tracker for Pokémon games.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": `${CANONICAL_DOMAIN}/search?q={search_term_string}`,
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }} />
+      )}
     </Helmet>
   )
 }

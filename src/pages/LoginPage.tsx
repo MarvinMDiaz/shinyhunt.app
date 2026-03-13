@@ -69,9 +69,9 @@ export function LoginPage() {
   return (
     <>
       <SEO
-        title="Sign In"
-        description="Sign in to ShinyHunt.app to track your shiny Pokémon hunting journey. Calculate odds, visualize progress, and build your trophy case."
-        canonicalUrl="/login"
+        title="Sign In — ShinyHunt"
+        description="Sign in to ShinyHunt to track your shiny Pokémon hunting journey. Track shiny hunts, calculate odds, and build your shiny Pokédex."
+        canonicalUrl="https://www.shinyhunt.app/login"
         noindex={true}
       />
       <AuthLayout>

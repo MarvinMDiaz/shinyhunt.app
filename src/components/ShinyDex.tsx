@@ -354,6 +354,7 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
                     <img
                       src={isCompleted && tile.shinyImage ? tile.shinyImage : tile.image}
                       alt={tile.name}
+                      loading="lazy"
                       className={cn(
                         "w-full h-full object-contain transition-all",
                         !isCompleted && "opacity-20 grayscale"

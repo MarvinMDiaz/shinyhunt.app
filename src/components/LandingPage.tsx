@@ -45,6 +45,7 @@ function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onTogg
         {/* Logo - Match tracker app navbar size */}
         <div className="flex items-center">
           <img
+            loading="lazy"
             src="/logo.png"
             alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker"
             className="h-[59px] md:h-[135px] lg:h-[172px] w-auto"
@@ -263,7 +264,8 @@ export function LandingPage({ onStartHunting, onNavigateToTracker, onViewTrophyC
                 </motion.div>
                 
                 {/* Logo with subtle drop shadow */}
-                <img 
+                <img
+            loading="lazy" 
                   src="/logo.png" 
                   alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker Logo" 
                   className="h-56 md:h-72 lg:h-96 w-auto relative z-10"

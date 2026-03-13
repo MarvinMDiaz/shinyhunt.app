@@ -77,9 +77,9 @@ export function HomePage() {
     return (
       <>
         <SEO
-          title="Shiny Hunt Tracker - Pokémon Shiny Hunting Tracker"
-          description="Free shiny hunt tracker for Pokémon. Track shiny hunts, calculate odds, monitor progress, and build your shiny collection. The best shiny hunting tracker for tracking Pokémon hunts across all generations."
-          canonicalUrl="/"
+          title="ShinyHunt — Pokémon Shiny Hunting Tracker"
+          description="Track your Pokémon shiny hunts, reset counters, and build your shiny Pokédex. The ultimate shiny hunting tracker for Pokémon games."
+          canonicalUrl="https://www.shinyhunt.app/"
         />
         <LandingPage
           onStartHunting={handleStartHunting}

@@ -768,10 +768,9 @@ export function TrackerApp() {
   return (
     <>
         <SEO
-          title="Shiny Hunt Tracker Dashboard"
-          description="Track your shiny Pokémon hunts with real-time progress, shiny odds calculations, and statistics. Monitor multiple hunts, calculate probabilities, and build your shiny collection."
-          canonicalUrl="/tracker"
-          noindex={true}
+          title="Shiny Hunt Tracker — Track Your Pokémon Shiny Hunts"
+          description="Track your Pokémon shiny hunts with real-time progress, reset counters, and shiny odds calculations. Monitor multiple hunts, calculate probabilities, and build your shiny Pokédex."
+          canonicalUrl="https://www.shinyhunt.app/tracker"
         />
       {/* First 151 Celebration Popup */}
       <First151CelebrationPopup

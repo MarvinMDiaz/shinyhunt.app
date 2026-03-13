@@ -62,9 +62,9 @@ export function SignupPage() {
   return (
     <>
       <SEO
-        title="Create Account"
-        description="Join ShinyHunt.app to start tracking your shiny Pokémon hunts. Free account with Google sign-in. Track encounters, calculate odds, and build your trophy case."
-        canonicalUrl="/signup"
+        title="Create Account — ShinyHunt"
+        description="Join ShinyHunt to start tracking your shiny Pokémon hunts. Free account with Google sign-in. Track encounters, reset counters, and build your shiny Pokédex."
+        canonicalUrl="https://www.shinyhunt.app/signup"
         noindex={true}
       />
       <AuthLayout>

@@ -98,6 +98,13 @@ export function AdminDashboard() {
       <>
         <SEO
           title="Admin Dashboard"
+          description="ShinyHunt admin dashboard for managing users, hunts, and platform statistics."
+          canonicalUrl="https://www.shinyhunt.app/admin"
+          noindex={true}
+          nofollow={true}
+        />
+        <SEO
+          title="Admin Dashboard"
           description="Admin dashboard for ShinyHunt.app"
           canonicalUrl="/admin"
           noindex={true}
@@ -116,9 +123,9 @@ export function AdminDashboard() {
   return (
     <>
       <SEO
-        title="Admin Dashboard"
-        description="Admin dashboard for ShinyHunt.app"
-        canonicalUrl="/admin"
+        title="Admin Dashboard — ShinyHunt"
+        description="ShinyHunt admin dashboard for managing users, hunts, and platform statistics."
+        canonicalUrl="https://www.shinyhunt.app/admin"
         noindex={true}
         nofollow={true}
       />
