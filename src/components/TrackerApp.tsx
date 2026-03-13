@@ -800,7 +800,7 @@ export function TrackerApp() {
                 <img 
                   src="/logo.png" 
                   alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker" 
-                  className="h-10 md:h-[135px] lg:h-[172px] w-auto transition-all duration-200"
+                  className="h-[59px] md:h-[135px] lg:h-[172px] w-auto transition-all duration-200"
                 />
               </button>
               
