@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { DarkModeToggle } from '@/components/DarkModeToggle'
+import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
 import { 
   Users, 
   TrendingUp, 
@@ -11,7 +13,8 @@ import {
   Activity, 
   BarChart3,
   Search,
-  Sparkles
+  Sparkles,
+  Clock
 } from 'lucide-react'
 import { 
   getAdminStats, 
@@ -27,6 +30,7 @@ import {
   LeaderboardEntry,
   UserLeaderboardEntry,
 } from '@/lib/adminData'
+import { getLiveAnalytics, type LiveAnalytics } from '@/lib/supabase/analytics'
 import { formatDate } from '@/lib/utils'
 import { SEO } from '@/components/SEO'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
@@ -34,6 +38,7 @@ import type { BadgeId } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 
 export function AdminDashboard() {
+  const [darkMode, setDarkMode] = useState(() => loadPreferences().darkMode)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [userOverview, setUserOverview] = useState<UserOverview[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
@@ -43,6 +48,7 @@ export function AdminDashboard() {
   const [topUsersByActiveHuntLength, setTopUsersByActiveHuntLength] = useState<UserLeaderboardEntry[]>([])
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
+  const [liveAnalytics, setLiveAnalytics] = useState<LiveAnalytics | null>(null)
 
   useEffect(() => {
     // Load admin data from Supabase
@@ -57,6 +63,7 @@ export function AdminDashboard() {
           longestHuntsData,
           topCompletionsData,
           topActiveHuntData,
+          liveAnalyticsData,
         ] = await Promise.all([
           getAdminStats(),
           getUserOverview(),
@@ -65,6 +72,7 @@ export function AdminDashboard() {
           getLongestHunts(10),
           getTopUsersByCompletions(10),
           getTopUsersByActiveHuntLength(10),
+          getLiveAnalytics(),
         ])
 
         setStats(statsData)
@@ -74,6 +82,7 @@ export function AdminDashboard() {
         setLongestHunts(longestHuntsData)
         setTopUsersByCompletions(topCompletionsData)
         setTopUsersByActiveHuntLength(topActiveHuntData)
+        setLiveAnalytics(liveAnalyticsData)
       } catch (error) {
         logger.error('Error loading admin data')
         // Show error state - keep zeros for now
@@ -87,6 +96,20 @@ export function AdminDashboard() {
     const interval = setInterval(loadData, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  // Apply dark mode to document
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
+  // Save dark mode preference when changed
+  useEffect(() => {
+    savePreferences({ darkMode })
+  }, [darkMode])
 
   const filteredUsers = userOverview.filter(user =>
     user.name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
@@ -129,23 +152,29 @@ export function AdminDashboard() {
         noindex={true}
         nofollow={true}
       />
-      <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen bg-background p-3 sm:p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
           <div>
-            <h1 className="text-3xl font-bold">Admin Portal</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">Admin Portal</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               Platform statistics and user management
             </p>
           </div>
-          <Badge variant="outline" className="text-sm">
-            Admin Access
-          </Badge>
+          <div className="flex items-center gap-2 shrink-0">
+            <DarkModeToggle
+              darkMode={darkMode}
+              onToggle={() => setDarkMode((prev) => !prev)}
+            />
+            <Badge variant="outline" className="text-xs sm:text-sm">
+              Admin Access
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Total Users"
             value={stats?.totalUsers || 0}
@@ -198,24 +227,27 @@ export function AdminDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-            <TabsTrigger value="stats">Hunt Stats</TabsTrigger>
-            <TabsTrigger value="pokemon">Popular Pokémon</TabsTrigger>
-            <TabsTrigger value="leaderboards">Leaderboards</TabsTrigger>
-            <TabsTrigger value="analytics">User Analytics</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+            <TabsList className="w-full sm:w-auto min-w-max">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
+              <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
+              <TabsTrigger value="stats" className="text-xs sm:text-sm">Stats</TabsTrigger>
+              <TabsTrigger value="pokemon" className="text-xs sm:text-sm">Pokémon</TabsTrigger>
+              <TabsTrigger value="leaderboards" className="text-xs sm:text-sm">Leaderboards</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+              <TabsTrigger value="live" className="text-xs sm:text-sm">Live Stats</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {/* Encounter Distribution */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Encounter Distribution</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Encounter Distribution</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     How many encounters before finding shiny
                   </CardDescription>
                 </CardHeader>
@@ -223,10 +255,10 @@ export function AdminDashboard() {
                   {stats && (
                     <div className="space-y-3">
                       {Object.entries(stats.encounterDistribution).map(([range, count]) => (
-                        <div key={range} className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">{range}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                        <div key={range} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">{range}</span>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <div className="flex-1 sm:w-32 h-2 bg-muted rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-primary rounded-full transition-all"
                                 style={{
@@ -236,7 +268,7 @@ export function AdminDashboard() {
                                 }}
                               />
                             </div>
-                            <span className="text-sm font-medium w-12 text-right">{count}</span>
+                            <span className="text-xs sm:text-sm font-medium w-12 sm:w-auto text-right shrink-0">{count}</span>
                           </div>
                         </div>
                       ))}
@@ -248,33 +280,33 @@ export function AdminDashboard() {
               {/* Quick Stats */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Stats</CardTitle>
-                  <CardDescription>Key metrics at a glance</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Quick Stats</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Key metrics at a glance</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Median Encounters</span>
-                    <span className="text-lg font-bold">{stats?.medianEncountersToShiny || 0}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Median Encounters</span>
+                    <span className="text-base sm:text-lg font-bold">{stats?.medianEncountersToShiny || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Completion Rate</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-xs sm:text-sm text-muted-foreground">Completion Rate</span>
+                    <span className="text-base sm:text-lg font-bold">
                       {stats && stats.totalHunts > 0
                         ? `${Math.round((stats.completedHunts / stats.totalHunts) * 100)}%`
                         : '0%'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Avg Hunts per User</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-xs sm:text-sm text-muted-foreground">Avg Hunts per User</span>
+                    <span className="text-base sm:text-lg font-bold">
                       {stats && stats.totalUsers > 0
                         ? Math.round(stats.totalHunts / stats.totalUsers)
                         : 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Avg Shiny Odds</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-xs sm:text-sm text-muted-foreground">Avg Shiny Odds</span>
+                    <span className="text-base sm:text-lg font-bold">
                       1/{stats?.averageShinyOdds || 4096}
                     </span>
                   </div>
@@ -285,12 +317,12 @@ export function AdminDashboard() {
 
           {/* Leaderboards Tab */}
           <TabsContent value="leaderboards" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {/* Longest Hunts */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Longest Hunts</CardTitle>
-                  <CardDescription>Top 10 hunts by encounters</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Longest Hunts</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Top 10 hunts by encounters</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {longestHunts.length > 0 ? (
@@ -298,17 +330,17 @@ export function AdminDashboard() {
                       {longestHunts.map((hunt, index) => (
                         <div
                           key={hunt.id}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-muted-foreground w-6">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
                               #{index + 1}
                             </span>
-                            <span className="font-semibold capitalize">{hunt.name}</span>
+                            <span className="font-semibold capitalize text-sm sm:text-base truncate">{hunt.name}</span>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left sm:text-right shrink-0">
                             <p className="text-xs text-muted-foreground">Encounters</p>
-                            <p className="font-bold">{hunt.value.toLocaleString()}</p>
+                            <p className="font-bold text-sm sm:text-base">{hunt.value.toLocaleString()}</p>
                           </div>
                         </div>
                       ))}
@@ -324,8 +356,8 @@ export function AdminDashboard() {
               {/* Most Hunted Pokémon (already exists, but show here too) */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Most Hunted Pokémon</CardTitle>
-                  <CardDescription>Top 10 by hunt count</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Most Hunted Pokémon</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Top 10 by hunt count</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {popularPokemon.length > 0 ? (
@@ -333,22 +365,22 @@ export function AdminDashboard() {
                       {popularPokemon.map((pokemon, index) => (
                         <div
                           key={pokemon.name}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-muted-foreground w-6">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
                               #{index + 1}
                             </span>
-                            <span className="font-semibold capitalize">{pokemon.name}</span>
+                            <span className="font-semibold capitalize text-sm sm:text-base truncate">{pokemon.name}</span>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
+                          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                            <div className="text-left sm:text-right">
                               <p className="text-xs text-muted-foreground">Hunted</p>
-                              <p className="font-bold">{pokemon.hunted}</p>
+                              <p className="font-bold text-sm sm:text-base">{pokemon.hunted}</p>
                             </div>
-                            <div className="text-right w-20">
+                            <div className="text-left sm:text-right sm:w-20">
                               <p className="text-xs text-muted-foreground">Rate</p>
-                              <p className="font-bold">
+                              <p className="font-bold text-sm sm:text-base">
                                 {pokemon.hunted > 0
                                   ? `${Math.round((pokemon.completed / pokemon.hunted) * 100)}%`
                                   : '0%'}
@@ -370,12 +402,12 @@ export function AdminDashboard() {
 
           {/* User Analytics Tab */}
           <TabsContent value="analytics" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {/* Top Users by Completions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Most Completed Hunts</CardTitle>
-                  <CardDescription>Top 10 users by completed hunts</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Most Completed Hunts</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Top 10 users by completed hunts</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {topUsersByCompletions.length > 0 ? (
@@ -383,14 +415,14 @@ export function AdminDashboard() {
                       {topUsersByCompletions.map((user, index) => (
                         <div
                           key={user.userId}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0 pt-0.5">
                               #{index + 1}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold truncate">{user.userName}</p>
+                              <p className="font-semibold truncate text-sm sm:text-base">{user.userName}</p>
                               <p className="text-xs text-muted-foreground truncate">{user.userEmail}</p>
                               {user.metadata?.badges && Array.isArray(user.metadata.badges) && user.metadata.badges.length > 0 && (
                                 <div className="mt-1">
@@ -405,9 +437,9 @@ export function AdminDashboard() {
                               )}
                             </div>
                           </div>
-                          <div className="text-right shrink-0 ml-2">
+                          <div className="text-left sm:text-right shrink-0 sm:ml-2 w-full sm:w-auto">
                             <p className="text-xs text-muted-foreground">Completed</p>
-                            <p className="font-bold">{user.value}</p>
+                            <p className="font-bold text-sm sm:text-base">{user.value}</p>
                           </div>
                         </div>
                       ))}
@@ -423,8 +455,8 @@ export function AdminDashboard() {
               {/* Top Users by Active Hunt Length */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Longest Active Hunts</CardTitle>
-                  <CardDescription>Top 10 users by current hunt length</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Longest Active Hunts</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Top 10 users by current hunt length</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {topUsersByActiveHuntLength.length > 0 ? (
@@ -432,14 +464,14 @@ export function AdminDashboard() {
                       {topUsersByActiveHuntLength.map((user, index) => (
                         <div
                           key={user.userId}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border bg-card"
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-6 shrink-0 pt-0.5">
                               #{index + 1}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold truncate">{user.userName}</p>
+                              <p className="font-semibold truncate text-sm sm:text-base">{user.userName}</p>
                               <p className="text-xs text-muted-foreground truncate">
                                 {user.metadata?.pokemon || 'Unknown Pokémon'}
                               </p>
@@ -456,9 +488,9 @@ export function AdminDashboard() {
                               )}
                             </div>
                           </div>
-                          <div className="text-right shrink-0 ml-2">
+                          <div className="text-left sm:text-right shrink-0 sm:ml-2 w-full sm:w-auto">
                             <p className="text-xs text-muted-foreground">Encounters</p>
-                            <p className="font-bold">{user.value.toLocaleString()}</p>
+                            <p className="font-bold text-sm sm:text-base">{user.value.toLocaleString()}</p>
                           </div>
                         </div>
                       ))}
@@ -477,26 +509,61 @@ export function AdminDashboard() {
           <TabsContent value="users" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                   <div>
-                    <CardTitle>User Overview</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-lg sm:text-xl">User Overview</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                       Manage and view all platform users
                     </CardDescription>
                   </div>
-                  <div className="relative w-64">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search users..."
                       value={userSearchQuery}
                       onChange={(e) => setUserSearchQuery(e.target.value)}
-                      className="pl-9"
+                      className="pl-9 text-sm sm:text-base"
                     />
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
+              <CardContent className="p-0 sm:p-6">
+                {/* Mobile Card Layout */}
+                <div className="block sm:hidden space-y-3 p-4">
+                  {filteredUsers.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8 text-sm">No users found</p>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <div key={user.id} className="border rounded-lg p-3 space-y-2 bg-card">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{user.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                          <Badge variant={user.status === 'active' ? 'default' : 'secondary'} className="text-xs shrink-0 ml-2">
+                            {user.status}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Join Date:</span>
+                            <p className="font-medium">{formatDate(user.joinDate)}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Hunts:</span>
+                            <p className="font-medium">{user.totalHunts}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">Shinies:</span>
+                            <p className="font-medium">{user.totalShinies}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                {/* Desktop Table Layout */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
@@ -542,33 +609,33 @@ export function AdminDashboard() {
           <TabsContent value="activity" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Latest platform activity and events
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {recentActivity.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No recent activity</p>
+                    <p className="text-center text-muted-foreground py-8 text-sm">No recent activity</p>
                   ) : (
                     recentActivity.map((activity, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                           <ActivityIcon type={activity.type} />
-                          <div>
-                            <p className="text-sm font-medium">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium break-words">
                               {getActivityDescription(activity)}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground mt-1">
                               {formatDate(activity.timestamp)}
                             </p>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs shrink-0 sm:ml-2">
                           {activity.type.replace('_', ' ')}
                         </Badge>
                       </div>
@@ -581,22 +648,22 @@ export function AdminDashboard() {
 
           {/* Hunt Stats Tab */}
           <TabsContent value="stats" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Encounter Statistics</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Encounter Statistics</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Analysis of encounters before shiny finds
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Average</span>
-                    <span className="text-2xl font-bold">{stats?.averageEncountersToShiny || 0}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Average</span>
+                    <span className="text-xl sm:text-2xl font-bold">{stats?.averageEncountersToShiny || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Median</span>
-                    <span className="text-2xl font-bold">{stats?.medianEncountersToShiny || 0}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Median</span>
+                    <span className="text-xl sm:text-2xl font-bold">{stats?.medianEncountersToShiny || 0}</span>
                   </div>
                   {/* TODO: Add lowest/highest when data is available */}
                   <div className="pt-4 border-t">
@@ -609,23 +676,23 @@ export function AdminDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Hunt Completion Stats</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Hunt Completion Stats</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Hunt status breakdown
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Active Hunts</span>
-                    <span className="text-lg font-bold">{stats?.activeHunts || 0}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Active Hunts</span>
+                    <span className="text-base sm:text-lg font-bold">{stats?.activeHunts || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Completed Hunts</span>
-                    <span className="text-lg font-bold">{stats?.completedHunts || 0}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Completed Hunts</span>
+                    <span className="text-base sm:text-lg font-bold">{stats?.completedHunts || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Completion Rate</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-xs sm:text-sm text-muted-foreground">Completion Rate</span>
+                    <span className="text-base sm:text-lg font-bold">
                       {stats && stats.totalHunts > 0
                         ? `${Math.round((stats.completedHunts / stats.totalHunts) * 100)}%`
                         : '0%'}
@@ -636,43 +703,168 @@ export function AdminDashboard() {
             </div>
           </TabsContent>
 
+          {/* Live Analytics Tab */}
+          <TabsContent value="live" className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {/* Active Users Right Now */}
+              <Card>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                    Active Right Now
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Users online in last 2 minutes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-3xl sm:text-4xl font-bold">{liveAnalytics?.activeUsersNow || 0}</div>
+                  {liveAnalytics && liveAnalytics.recentlyActiveUsers.length > 0 && (
+                    <div className="mt-3 space-y-1">
+                      <p className="text-xs text-muted-foreground">Recently active:</p>
+                      {liveAnalytics.recentlyActiveUsers.slice(0, 3).map((user) => (
+                        <p key={user.id} className="text-xs truncate">{user.name}</p>
+                      ))}
+                      {liveAnalytics.recentlyActiveUsers.length > 3 && (
+                        <p className="text-xs text-muted-foreground">
+                          +{liveAnalytics.recentlyActiveUsers.length - 3} more
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* New Signups Today */}
+              <Card>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                    New Signups Today
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Users joined today
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-3xl sm:text-4xl font-bold">{liveAnalytics?.newSignupsToday || 0}</div>
+                </CardContent>
+              </Card>
+
+              {/* Hunts Started Today */}
+              <Card>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+                    Hunts Started Today
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    New hunts created today
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-3xl sm:text-4xl font-bold">{liveAnalytics?.huntsStartedToday || 0}</div>
+                </CardContent>
+              </Card>
+
+              {/* Longest Running Hunt */}
+              {liveAnalytics?.longestRunningHunt && (
+                <Card>
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                      Longest Running Hunt
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                      Currently active hunt
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 sm:p-6 pt-0">
+                    <div className="space-y-2">
+                      <p className="font-semibold text-sm sm:text-base capitalize">
+                        {liveAnalytics.longestRunningHunt.pokemonName}
+                      </p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {liveAnalytics.longestRunningHunt.userName}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-muted-foreground">Time:</span>
+                        <span className="text-sm font-bold">{liveAnalytics.longestRunningHunt.elapsedTime}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Encounters:</span>
+                        <span className="text-sm font-bold">{liveAnalytics.longestRunningHunt.encounters.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Most Active Hunter Today */}
+              {liveAnalytics?.mostActiveHunter && (
+                <Card>
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                      Most Active Today
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                      Top resetter today
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 sm:p-6 pt-0">
+                    <div className="space-y-2">
+                      <p className="font-semibold text-sm sm:text-base">
+                        {liveAnalytics.mostActiveHunter.userName}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-muted-foreground">Resets:</span>
+                        <span className="text-sm font-bold">{liveAnalytics.mostActiveHunter.resetsToday.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
           {/* Popular Pokémon Tab */}
           <TabsContent value="pokemon" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Most Hunted Pokémon</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Most Hunted Pokémon</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Top Pokémon targets across all users
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {popularPokemon.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No hunt data available</p>
+                  <p className="text-center text-muted-foreground py-8 text-sm">No hunt data available</p>
                 ) : (
                   <div className="space-y-3">
                     {popularPokemon.map((pokemon, index) => (
                       <div
                         key={pokemon.name}
-                        className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border bg-card"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-muted-foreground w-6">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <span className="text-sm font-medium text-muted-foreground w-6 shrink-0">
                             #{index + 1}
                           </span>
-                          <span className="font-semibold capitalize">{pokemon.name}</span>
+                          <span className="font-semibold capitalize text-sm sm:text-base">{pokemon.name}</span>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
+                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                          <div className="text-left sm:text-right">
                             <p className="text-xs text-muted-foreground">Hunted</p>
-                            <p className="font-bold">{pokemon.hunted}</p>
+                            <p className="font-bold text-sm sm:text-base">{pokemon.hunted}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left sm:text-right">
                             <p className="text-xs text-muted-foreground">Completed</p>
-                            <p className="font-bold text-green-500">{pokemon.completed}</p>
+                            <p className="font-bold text-green-500 text-sm sm:text-base">{pokemon.completed}</p>
                           </div>
-                          <div className="text-right w-20">
+                          <div className="text-left sm:text-right sm:w-20">
                             <p className="text-xs text-muted-foreground">Rate</p>
-                            <p className="font-bold">
+                            <p className="font-bold text-sm sm:text-base">
                               {pokemon.hunted > 0
                                 ? `${Math.round((pokemon.completed / pokemon.hunted) * 100)}%`
                                 : '0%'}
@@ -706,12 +898,12 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+        <CardTitle className="text-xs sm:text-sm font-medium">{title}</CardTitle>
         <div className="text-muted-foreground">{icon}</div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+      <CardContent className="p-3 sm:p-6 pt-0">
+        <div className="text-xl sm:text-2xl font-bold">{value.toLocaleString()}</div>
         <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </CardContent>
     </Card>

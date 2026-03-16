@@ -40,6 +40,7 @@ import { useAuth } from '@/context/AuthContext'
 import { First151CelebrationPopup } from '@/components/First151CelebrationPopup'
 import { SEO } from '@/components/SEO'
 import { logger } from '@/lib/logger'
+import { startPresenceTracking, stopPresenceTracking } from '@/lib/supabase/presence'
 
 const isDev = import.meta.env.DEV
 
@@ -74,6 +75,7 @@ export function TrackerApp() {
     if (!isAuthenticated || !currentUserId) {
       if (previousUserId !== null) {
         // User was logged in before, now logged out - clear everything
+        stopPresenceTracking()
         setState({
           hunts: [],
           currentHuntId: null,
@@ -84,6 +86,11 @@ export function TrackerApp() {
         previousUserIdRef.current = null
       }
       return
+    }
+
+    // Start presence tracking when authenticated
+    if (isAuthenticated && currentUserId) {
+      startPresenceTracking()
     }
 
     // User is authenticated
@@ -157,6 +164,13 @@ export function TrackerApp() {
       loadUserData()
     }
   }, [isAuthenticated, loadingAuth, user?.id])
+
+  // Cleanup presence tracking on unmount
+  useEffect(() => {
+    return () => {
+      stopPresenceTracking()
+    }
+  }, [])
 
   // Initialize profile for new users and check for First 151 popup
   // Use a ref to track if initialization has already run to prevent loops
@@ -800,7 +814,7 @@ export function TrackerApp() {
                 <img 
                   src="/logo.png" 
                   alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker" 
-                  className="h-[59px] md:h-[135px] lg:h-[172px] w-auto transition-all duration-200"
+                  className="h-[160px] md:h-[270px] lg:h-[344px] w-auto transition-all duration-200"
                 />
               </button>
               
