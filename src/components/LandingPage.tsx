@@ -43,13 +43,13 @@ function LandingNavBar({ onNavigateToTracker, onViewTrophyCase, darkMode, onTogg
   return (
     <nav className="absolute top-0 left-0 right-0 z-50 px-4 sm:px-6 py-2 md:py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo - Match tracker app navbar size */}
+        {/* Logo - Compact navbar size, matches tracker app */}
         <div className="flex items-center">
           <img
             loading="lazy"
             src="/logo.png"
             alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker"
-            className="h-[59px] md:h-[135px] lg:h-[172px] w-auto"
+            className="h-[40px] md:h-[156px] w-auto object-contain"
           />
         </div>
 

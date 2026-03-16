@@ -799,22 +799,22 @@ export function TrackerApp() {
       <FloatingSparkles goldCount={20} cyanCount={15} themeId={state.theme} />
       
       <header className="border-b sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="banner">
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 py-2.5 md:py-0">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 py-2 md:py-2.5">
           {/* Mobile: Optimized single-row layout, Desktop: Original layout */}
           <div className="flex items-center justify-between gap-2 md:gap-2 flex-nowrap">
             {/* Left Section: Logo + Hunt Selector */}
             <div className="flex items-center gap-2 md:gap-2 min-w-0 flex-1">
-              {/* Logo - Smaller on mobile for better fit */}
+              {/* Logo - Compact navbar size, crisp at all breakpoints */}
               <button
                 onClick={() => navigate('/')}
-                className="shrink-0 hover:opacity-80 active:opacity-70 transition-all duration-200 flex items-center -my-1 md:-my-2 lg:-my-4"
+                className="shrink-0 hover:opacity-80 active:opacity-70 transition-all duration-200 flex items-center"
                 aria-label="Home"
                 title="Home"
               >
                 <img 
                   src="/logo.png" 
                   alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker" 
-                  className="h-[160px] md:h-[270px] lg:h-[344px] w-auto transition-all duration-200"
+                  className="h-[40px] md:h-[156px] w-auto object-contain transition-all duration-200"
                 />
               </button>
               
