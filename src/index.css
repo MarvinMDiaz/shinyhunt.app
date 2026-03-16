@@ -176,6 +176,34 @@
   }
 }
 
+/* +1 increment flash animation for progress count */
+@keyframes increment-flash {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.95);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+.animate-increment-flash {
+  animation: increment-flash 700ms ease-out forwards;
+}
+
+.animate-decrement-flash {
+  animation: increment-flash 700ms ease-out forwards;
+}
+
 @keyframes bubble-rise {
   0% {
     transform: translateY(0) scale(0.8);

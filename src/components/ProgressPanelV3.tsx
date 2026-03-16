@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Plus, Minus, RotateCcw, CheckCircle2, RotateCw, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,6 +69,12 @@ export function ProgressPanelV3({
   themeId = 'default',
 }: ProgressPanelV3Props) {
   const [holdInterval, setHoldInterval] = useState<NodeJS.Timeout | null>(null)
+  const [incrementFlashKey, setIncrementFlashKey] = useState(0)
+  const [showIncrementFlash, setShowIncrementFlash] = useState(false)
+  const [decrementFlashKey, setDecrementFlashKey] = useState(0)
+  const [showDecrementFlash, setShowDecrementFlash] = useState(false)
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const decrementFlashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [gameGeneration, setGameGeneration] = useState<number | undefined>(undefined)
   const [games, setGames] = useState<Awaited<ReturnType<typeof loadGames>>>([])
   
@@ -146,6 +152,25 @@ export function ProgressPanelV3({
   const isCompleted = hunt.completed === true
   const canIncrement = !isCompleted || hunt.continueCounting === true
 
+  const triggerIncrementFlash = useCallback(() => {
+    setIncrementFlashKey((k) => k + 1)
+    setShowIncrementFlash(true)
+    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current)
+    flashTimeoutRef.current = setTimeout(() => {
+      setShowIncrementFlash(false)
+      flashTimeoutRef.current = null
+    }, 700)
+  }, [])
+
+  const triggerDecrementFlash = useCallback(() => {
+    setDecrementFlashKey((k) => k + 1)
+    setShowDecrementFlash(true)
+    if (decrementFlashTimeoutRef.current) clearTimeout(decrementFlashTimeoutRef.current)
+    decrementFlashTimeoutRef.current = setTimeout(() => {
+      setShowDecrementFlash(false)
+      decrementFlashTimeoutRef.current = null
+    }, 700)
+  }, [])
 
   // Handle hotkey presses
   useEffect(() => {
@@ -162,10 +187,12 @@ export function ProgressPanelV3({
         e.preventDefault()
         e.stopPropagation()
         onIncrement(1)
+        triggerIncrementFlash()
       } else if (pressedKey === decrementHotkey && canIncrement && hunt.count > 0) {
         e.preventDefault()
         e.stopPropagation()
         onIncrement(-1)
+        triggerDecrementFlash()
       }
     }
 
@@ -174,7 +201,15 @@ export function ProgressPanelV3({
     return () => {
       window.removeEventListener('keydown', handleKeyDown, false)
     }
-  }, [incrementHotkey, decrementHotkey, canIncrement, hunt.count, onIncrement])
+  }, [incrementHotkey, decrementHotkey, canIncrement, hunt.count, onIncrement, triggerIncrementFlash, triggerDecrementFlash])
+
+  // Cleanup flash timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current)
+      if (decrementFlashTimeoutRef.current) clearTimeout(decrementFlashTimeoutRef.current)
+    }
+  }, [])
 
   // Track when user is typing in input fields
   useEffect(() => {
@@ -253,12 +288,16 @@ export function ProgressPanelV3({
   const handleMouseDown = (delta: number) => {
     if (!canIncrement) return
     onIncrement(delta)
+    if (delta > 0) triggerIncrementFlash()
+    else if (delta < 0) triggerDecrementFlash()
     const interval = setInterval(() => {
       if (!canIncrement) {
         clearInterval(interval)
         return
       }
       onIncrement(delta)
+      if (delta > 0) triggerIncrementFlash()
+      else if (delta < 0) triggerDecrementFlash()
     }, 100)
     setHoldInterval(interval)
   }
@@ -369,7 +408,27 @@ export function ProgressPanelV3({
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium">Count</span>
-              <span className="text-2xl font-bold">{hunt.count.toLocaleString()}</span>
+              <div className="relative flex items-center">
+                {showDecrementFlash && (
+                  <span
+                    key={decrementFlashKey}
+                    className="absolute right-full mr-1.5 text-sm font-bold text-red-500 animate-decrement-flash"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    -1
+                  </span>
+                )}
+                <span className="text-2xl font-bold">{hunt.count.toLocaleString()}</span>
+                {showIncrementFlash && (
+                  <span
+                    key={incrementFlashKey}
+                    className="absolute left-full ml-1.5 text-sm font-bold text-green-500 animate-increment-flash"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    +1
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Progress Bar - ALWAYS VISIBLE */}
