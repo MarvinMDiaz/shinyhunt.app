@@ -374,14 +374,8 @@ export class SupabaseHuntAdapter implements HuntStorageAdapter {
       const updatedHunt = { ...existing, ...updates }
       const serialized = this.serializeHunt(updatedHunt, userId)
 
-      // Track progress event if count increased
-      if (updates.count !== undefined && updates.count > existing.count) {
-        // Import dynamically to avoid circular dependencies
-        const { recordProgressEvent } = await import('./progressEvents')
-        recordProgressEvent(id, updates.count).catch(() => {
-          // Non-critical, don't block update
-        })
-      }
+      // Progress events are now recorded client-side on each +1 to avoid undercounting
+      // when React batches state updates and saves (removed server-side recording here)
 
       // Remove id and user_id from update (they shouldn't change)
       const { id: _, user_id: __, ...updateData } = serialized

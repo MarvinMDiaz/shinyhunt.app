@@ -56,13 +56,14 @@ export function AdminDashboard() {
 
   useEffect(() => {
     // Load admin data from Supabase
-    const loadData = async () => {
+    const loadData = async (isInitialLoad: boolean) => {
       try {
-        setLoading(true)
+        // Only show full-page loading on initial load; background refreshes stay silent
+        if (isInitialLoad) setLoading(true)
         const [
-          statsData, 
-          usersData, 
-          activityData, 
+          statsData,
+          usersData,
+          activityData,
           pokemonData,
           longestHuntsData,
           topCompletionsData,
@@ -91,13 +92,13 @@ export function AdminDashboard() {
         logger.error('Error loading admin data')
         // Show error state - keep zeros for now
       } finally {
-        setLoading(false)
+        if (isInitialLoad) setLoading(false)
       }
     }
 
-    loadData()
-    // Refresh data every 30 seconds
-    const interval = setInterval(loadData, 30000)
+    loadData(true)
+    // Background refresh every 30 seconds - no loading state, no UI reset
+    const interval = setInterval(() => loadData(false), 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -240,9 +241,10 @@ export function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
+        <Tabs defaultValue="live" className="space-y-4">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
             <TabsList className="w-full sm:w-auto min-w-max">
+              <TabsTrigger value="live" className="text-xs sm:text-sm">Live Stats</TabsTrigger>
               <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs sm:text-sm">Users</TabsTrigger>
               <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
@@ -250,7 +252,6 @@ export function AdminDashboard() {
               <TabsTrigger value="pokemon" className="text-xs sm:text-sm">Pokémon</TabsTrigger>
               <TabsTrigger value="leaderboards" className="text-xs sm:text-sm">Leaderboards</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
-              <TabsTrigger value="live" className="text-xs sm:text-sm">Live Stats</TabsTrigger>
             </TabsList>
           </div>
 
@@ -781,41 +782,53 @@ export function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Longest Running Hunt */}
-              {liveAnalytics?.longestRunningHunt && (
+              {/* Longest Running Hunts */}
+              {liveAnalytics?.longestRunningHunts && liveAnalytics.longestRunningHunts.length > 0 && (
                 <Card>
                   <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                       <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                      Longest Running Hunt
+                      Longest Running Hunts
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
-                      Currently active hunt
+                      Top 5 longest active hunts
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-3 sm:p-6 pt-0">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-sm sm:text-base capitalize">
-                        {liveAnalytics.longestRunningHunt.pokemonName}
-                      </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        {liveAnalytics.longestRunningHunt.userName}
-                      </p>
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <span className="text-xs text-muted-foreground">Time:</span>
-                        <span className="text-sm font-bold">{liveAnalytics.longestRunningHunt.elapsedTime}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Encounters:</span>
-                        <span className="text-sm font-bold">{liveAnalytics.longestRunningHunt.encounters.toLocaleString()}</span>
-                      </div>
+                    <div className="space-y-3">
+                      {liveAnalytics.longestRunningHunts.map((hunt, index) => (
+                        <div
+                          key={hunt.huntId}
+                          className="py-2 border-b last:border-b-0 last:pb-0 first:pt-0"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-muted-foreground w-5 shrink-0">
+                              #{index + 1}
+                            </span>
+                            <p className="font-semibold text-sm sm:text-base capitalize">
+                              {hunt.pokemonName}
+                            </p>
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground pl-7">
+                            {hunt.userName}
+                          </p>
+                          <div className="flex items-center justify-between pt-2 border-t mt-2 pl-7">
+                            <span className="text-xs text-muted-foreground">Time:</span>
+                            <span className="text-sm font-bold">{hunt.elapsedTime}</span>
+                          </div>
+                          <div className="flex items-center justify-between pl-7">
+                            <span className="text-xs text-muted-foreground">Encounters:</span>
+                            <span className="text-sm font-bold">{hunt.encounters.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Most Active Hunter Today */}
-              {liveAnalytics?.mostActiveHunter && (
+              {/* Most Active Hunters Today */}
+              {(liveAnalytics?.mostActiveHuntersToday?.length > 0 || liveAnalytics?.currentUserStats) && (
                 <Card>
                   <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="text-base sm:text-lg flex items-center gap-2">
@@ -823,18 +836,46 @@ export function AdminDashboard() {
                       Most Active Today
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
-                      Top resetter today
+                      Top 5 resetters today
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-3 sm:p-6 pt-0">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-sm sm:text-base">
-                        {liveAnalytics.mostActiveHunter.userName}
-                      </p>
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <span className="text-xs text-muted-foreground">Resets:</span>
-                        <span className="text-sm font-bold">{liveAnalytics.mostActiveHunter.resetsToday.toLocaleString()}</span>
-                      </div>
+                    <div className="space-y-3">
+                      {liveAnalytics?.currentUserStats && (
+                        <div className="flex items-center justify-between py-2 pb-3 border-b border-primary/30 bg-primary/5 -mx-1 px-2 rounded">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-sm font-medium text-primary w-5 shrink-0">
+                              {liveAnalytics.currentUserStats.rank ? `#${liveAnalytics.currentUserStats.rank}` : '—'}
+                            </span>
+                            <p className="font-semibold text-sm sm:text-base text-primary">
+                              You
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground">Resets:</span>
+                            <span className="text-sm font-bold text-primary">{liveAnalytics.currentUserStats.resetsToday.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )}
+                      {liveAnalytics?.mostActiveHuntersToday?.map((hunter, index) => (
+                        <div
+                          key={hunter.userId}
+                          className="flex items-center justify-between py-2 border-b last:border-b-0 last:pb-0 first:pt-0"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-sm font-medium text-muted-foreground w-5 shrink-0">
+                              #{index + 1}
+                            </span>
+                            <p className="font-semibold text-sm sm:text-base truncate">
+                              {hunter.userName}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground">Resets:</span>
+                            <span className="text-sm font-bold">{hunter.resetsToday.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

@@ -41,6 +41,7 @@ import { First151CelebrationPopup } from '@/components/First151CelebrationPopup'
 import { SEO } from '@/components/SEO'
 import { logger } from '@/lib/logger'
 import { startPresenceTracking, stopPresenceTracking } from '@/lib/supabase/presence'
+import { recordProgressEvent } from '@/lib/supabase/progressEvents'
 
 const isDev = import.meta.env.DEV
 
@@ -605,6 +606,11 @@ export function TrackerApp() {
       delta,
       countBefore: currentHunt.count,
       countAfter: newCount,
+    }
+
+    // Record progress event immediately for each +1 (avoids undercounting when saves are batched)
+    if (delta > 0) {
+      recordProgressEvent(currentHunt.id, newCount).catch(() => {})
     }
 
     updateHunt(currentHunt.id, {
