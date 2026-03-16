@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,8 @@ import {
   BarChart3,
   Search,
   Sparkles,
-  Clock
+  Clock,
+  Home
 } from 'lucide-react'
 import { 
   getAdminStats, 
@@ -36,8 +38,10 @@ import { SEO } from '@/components/SEO'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
 import type { BadgeId } from '@/lib/auth'
 import { logger } from '@/lib/logger'
+import { Button } from '@/components/ui/button'
 
 export function AdminDashboard() {
+  const navigate = useNavigate()
   const [darkMode, setDarkMode] = useState(() => loadPreferences().darkMode)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [userOverview, setUserOverview] = useState<UserOverview[]>([])
@@ -163,6 +167,16 @@ export function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="h-9 px-3"
+              title="Back to Home"
+            >
+              <Home className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Home</span>
+            </Button>
             <DarkModeToggle
               darkMode={darkMode}
               onToggle={() => setDarkMode((prev) => !prev)}
