@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -16,7 +16,8 @@ import {
   Search,
   Sparkles,
   Clock,
-  Home
+  Home,
+  RefreshCw
 } from 'lucide-react'
 import { 
   getAdminStats, 
@@ -53,13 +54,82 @@ export function AdminDashboard() {
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [liveAnalytics, setLiveAnalytics] = useState<LiveAnalytics | null>(null)
+  const [activeTab, setActiveTab] = useState('live')
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const isRefreshingRef = useRef(false)
+
+  const loadDataForTab = async (tab: string) => {
+    if (isRefreshingRef.current) return
+    isRefreshingRef.current = true
+    setIsRefreshing(true)
+    try {
+      switch (tab) {
+        case 'live': {
+          const data = await getLiveAnalytics()
+          setLiveAnalytics(data)
+          break
+        }
+        case 'overview':
+        case 'stats': {
+          const data = await getAdminStats()
+          setStats(data)
+          break
+        }
+        case 'users': {
+          const data = await getUserOverview()
+          setUserOverview(data)
+          break
+        }
+        case 'activity': {
+          const data = await getRecentActivity(50)
+          setRecentActivity(data)
+          break
+        }
+        case 'pokemon': {
+          const data = await getPopularPokemon()
+          setPopularPokemon(data)
+          break
+        }
+        case 'leaderboards': {
+          const [pokemonData, longestData] = await Promise.all([
+            getPopularPokemon(),
+            getLongestHunts(10),
+          ])
+          setPopularPokemon(pokemonData)
+          setLongestHunts(longestData)
+          break
+        }
+        case 'analytics': {
+          const [completionsData, activeData] = await Promise.all([
+            getTopUsersByCompletions(10),
+            getTopUsersByActiveHuntLength(10),
+          ])
+          setTopUsersByCompletions(completionsData)
+          setTopUsersByActiveHuntLength(activeData)
+          break
+        }
+        default:
+          break
+      }
+    } catch (error) {
+      logger.error('Error loading admin data')
+    } finally {
+      isRefreshingRef.current = false
+      setIsRefreshing(false)
+    }
+  }
+
+  const handleManualRefresh = () => {
+    if (document.visibilityState !== 'visible') return
+    loadDataForTab(activeTab)
+  }
 
   useEffect(() => {
-    // Load admin data from Supabase
-    const loadData = async (isInitialLoad: boolean) => {
+    const loadDataAll = async () => {
+      if (isRefreshingRef.current) return
+      isRefreshingRef.current = true
       try {
-        // Only show full-page loading on initial load; background refreshes stay silent
-        if (isInitialLoad) setLoading(true)
+        setLoading(true)
         const [
           statsData,
           usersData,
@@ -90,17 +160,23 @@ export function AdminDashboard() {
         setLiveAnalytics(liveAnalyticsData)
       } catch (error) {
         logger.error('Error loading admin data')
-        // Show error state - keep zeros for now
       } finally {
-        if (isInitialLoad) setLoading(false)
+        setLoading(false)
+        isRefreshingRef.current = false
       }
     }
 
-    loadData(true)
-    // Background refresh every 30 seconds - no loading state, no UI reset
-    const interval = setInterval(() => loadData(false), 30000)
-    return () => clearInterval(interval)
+    loadDataAll()
   }, [])
+
+  useEffect(() => {
+    const POLL_INTERVAL_MS = 60000
+    const interval = setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      loadDataForTab(activeTab)
+    }, POLL_INTERVAL_MS)
+    return () => clearInterval(interval)
+  }, [activeTab])
 
   // Apply dark mode to document
   useEffect(() => {
@@ -168,6 +244,17 @@ export function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="h-9 px-3"
+              title="Refresh current tab"
+            >
+              <RefreshCw className={`h-4 w-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -241,7 +328,7 @@ export function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="live" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
             <TabsList className="w-full sm:w-auto min-w-max">
               <TabsTrigger value="live" className="text-xs sm:text-sm">Live Stats</TabsTrigger>

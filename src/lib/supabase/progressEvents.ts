@@ -16,6 +16,11 @@ export interface ProgressEvent {
   createdAt: Date
 }
 
+// IMPORTANT:
+// This system uses TOTAL reset count, not delta-based tracking.
+// Do NOT change this to p_reset_delta unless the database is updated accordingly.
+// Changing this without DB alignment will break analytics and progress tracking.
+
 /**
  * Record a progress event when hunt encounters increase
  * Call this whenever hunt.count increases
