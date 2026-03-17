@@ -13,7 +13,15 @@ import { Label } from '@/components/ui/label'
 import { Hunt } from '@/types'
 import { ThemeId } from '@/lib/themes'
 import { ProgressColorPicker } from './ProgressColorPicker'
+import { useUserProfile } from '@/context/UserProfileContext'
 import { logger } from '@/lib/logger'
+
+const DEFAULT_PROGRESS_COLOR = '#22c55e'
+
+function parseProgressColor(raw: string | null | undefined): string {
+  if (!raw || typeof raw !== 'string') return DEFAULT_PROGRESS_COLOR
+  return /^#[0-9A-F]{6}$/i.test(raw.trim()) ? raw.trim() : DEFAULT_PROGRESS_COLOR
+}
 import { HotkeyInput } from './HotkeyInput'
 import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
 import { loadGames, getGameById } from '@/lib/games'
@@ -77,6 +85,7 @@ export function ProgressPanelV3({
   const decrementFlashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [gameGeneration, setGameGeneration] = useState<number | undefined>(undefined)
   const [games, setGames] = useState<Awaited<ReturnType<typeof loadGames>>>([])
+  const { profile, updateProgressColor } = useUserProfile()
   
   // Load hotkey preferences
   const [incrementHotkey, setIncrementHotkey] = useState<string>(() => {
@@ -332,7 +341,7 @@ export function ProgressPanelV3({
   const progress = Math.min(Math.max((count / effectiveTarget) * 100, 0), 100)
   const remaining = Math.max(effectiveTarget - count, 0)
   const goalExceeded = count >= effectiveTarget
-  const progressColor = hunt.progressColor || '#22c55e'
+  const progressColor = parseProgressColor(profile?.progress_color ?? hunt.progressColor)
   
   // Show progress fill when count > 0
   const showProgressFill = count > 0
@@ -354,8 +363,14 @@ export function ProgressPanelV3({
             <div className="flex items-center justify-between">
               <CardTitle>Progress</CardTitle>
               <ProgressColorPicker
-                color={hunt.progressColor}
-                onChange={(color) => onUpdate({ progressColor: color })}
+                color={profile?.progress_color ?? hunt.progressColor ?? undefined}
+                onChange={(color) => {
+                  if (profile) {
+                    updateProgressColor(color).catch(() => {})
+                  } else {
+                    onUpdate({ progressColor: color })
+                  }
+                }}
               />
             </div>
             {/* Mobile Hunt Switcher */}

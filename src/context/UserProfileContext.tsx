@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
-import { getUserProfile } from '@/lib/supabase/auth'
+import { getUserProfile, updateProfileProgressColor } from '@/lib/supabase/auth'
 import { logger } from '@/lib/logger'
 
 const isDev = import.meta.env.DEV
@@ -145,6 +145,16 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
     await loadProfile(user?.id ?? null, skipLoading)
   }
 
+  const updateProgressColor = async (color: string) => {
+    if (!user?.id) return
+    const { error } = await updateProfileProgressColor(user.id, color)
+    if (error) {
+      logger.error('Error saving progress color')
+      return
+    }
+    setProfile((prev) => (prev ? { ...prev, progress_color: color } : null))
+  }
+
   // Update avatar URL immediately (for instant UI updates after upload)
   const updateAvatarUrl = (avatarUrl: string | null) => {
     setProfile((prev) => ({
@@ -194,6 +204,7 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
         loadingProfile,
         refreshProfile,
         updateAvatarUrl,
+        updateProgressColor,
       }}
     >
       {children}

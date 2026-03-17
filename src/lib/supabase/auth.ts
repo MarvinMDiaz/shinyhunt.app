@@ -151,6 +151,34 @@ export async function updateProfileAvatar(
 }
 
 /**
+ * Update user profile progress bar color
+ */
+export async function updateProfileProgressColor(
+  userId: string,
+  progressColor: string
+): Promise<{ error: Error | null }> {
+  try {
+    const trimmed = progressColor?.trim()
+    if (!trimmed) {
+      return { error: new Error('Progress color cannot be empty') }
+    }
+    if (!/^#[0-9A-F]{6}$/i.test(trimmed)) {
+      return { error: new Error('Invalid hex color format') }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ progress_color: trimmed })
+      .eq('id', userId)
+
+    return { error: error || null }
+  } catch (err) {
+    logger.error('Exception updating progress color')
+    return { error: err as Error }
+  }
+}
+
+/**
  * Update user profile display name
  */
 export async function updateProfileDisplayName(

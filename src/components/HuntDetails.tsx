@@ -18,6 +18,14 @@ import { getGameById, loadGamesSync } from '@/lib/games'
 import type { Game } from '@/constants/defaultGames'
 import { isPokemonAvailableInGame } from '@/data/pokemonGameAvailability'
 import { fetchPokemon } from '@/lib/pokeapi'
+import { useUserProfile } from '@/context/UserProfileContext'
+
+const DEFAULT_PROGRESS_COLOR = '#22c55e'
+
+function parseProgressColor(raw: string | null | undefined): string {
+  if (!raw || typeof raw !== 'string') return DEFAULT_PROGRESS_COLOR
+  return /^#[0-9A-F]{6}$/i.test(raw.trim()) ? raw.trim() : DEFAULT_PROGRESS_COLOR
+}
 
 interface HuntDetailsProps {
   hunt: Hunt
@@ -29,6 +37,8 @@ interface HuntDetailsProps {
 }
 
 export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate, themeId = 'default' }: HuntDetailsProps) {
+  const { profile } = useUserProfile()
+  const progressColor = parseProgressColor(profile?.progress_color ?? hunt.progressColor)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [goalInput, setGoalInput] = useState<string>(hunt.goal?.toString() || '')
@@ -413,19 +423,17 @@ export function HuntDetails({ hunt, onUpdate, onSetCount, onDelete, onAutoCreate
                 variant="outline"
                 className="px-4 shrink-0 text-white border-white/20 hover:border-white/30"
                 style={{
-                  backgroundColor: hunt.progressColor || '#22c55e',
-                  borderColor: hunt.progressColor || '#22c55e',
+                  backgroundColor: progressColor,
+                  borderColor: progressColor,
                 }}
                 onMouseEnter={(e) => {
-                  const color = hunt.progressColor || '#22c55e'
-                  e.currentTarget.style.backgroundColor = color
-                  e.currentTarget.style.borderColor = color
+                  e.currentTarget.style.backgroundColor = progressColor
+                  e.currentTarget.style.borderColor = progressColor
                   e.currentTarget.style.opacity = '0.9'
                 }}
                 onMouseLeave={(e) => {
-                  const color = hunt.progressColor || '#22c55e'
-                  e.currentTarget.style.backgroundColor = color
-                  e.currentTarget.style.borderColor = color
+                  e.currentTarget.style.backgroundColor = progressColor
+                  e.currentTarget.style.borderColor = progressColor
                   e.currentTarget.style.opacity = '1'
                 }}
                 onClick={() => {
