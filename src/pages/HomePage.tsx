@@ -4,6 +4,7 @@ import { LandingPage } from '@/components/LandingPage'
 import { useAuth } from '@/context/AuthContext'
 import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
 import { SEO } from '@/components/SEO'
+import { logger } from '@/lib/logger'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -34,8 +35,7 @@ export function HomePage() {
     if (!authenticated) {
       navigate('/signup')
     } else {
-      // Navigate to tracker and show trophy case
-      navigate('/tracker')
+      navigate('/trophy-case')
     }
   }
 
@@ -78,7 +78,7 @@ export function HomePage() {
       <>
         <SEO
           title="ShinyHunt — Pokémon Shiny Hunting Tracker"
-          description="Track your Pokémon shiny hunts, reset counters, and build your shiny Pokédex. The ultimate shiny hunting tracker for Pokémon games."
+          description="Track your Pokémon shiny hunts, encounter counts, and build your shiny Pokédex. A free shiny hunting tracker for Pokémon games."
           canonicalUrl="https://www.shinyhunt.app/"
         />
         <LandingPage

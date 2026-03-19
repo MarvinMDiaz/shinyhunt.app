@@ -60,13 +60,7 @@ export function SEO({
       <meta name="robots" content={robotsContent.join(', ')} />
       <link rel="canonical" href={url} />
 
-      {/* Favicons - consistent across all pages, served from site root */}
-      <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-      <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-      <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+      {/* Favicons - defined in index.html; no duplicates here */}
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />

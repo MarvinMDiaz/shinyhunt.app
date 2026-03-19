@@ -19,6 +19,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/tracker" element={<TrackerApp />} />
         <Route path="/tracker/*" element={<TrackerApp />} />
+        <Route path="/trophy-case" element={<TrackerApp key="trophy-case" />} />
         <Route path="/pokemon/:pokemon-name-shiny-hunt" element={<PokemonHuntPage />} />
         <Route path="/guides" element={<GuidesPage />} />
         <Route

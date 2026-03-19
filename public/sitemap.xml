@@ -17,6 +17,13 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <!-- Trophy Case - Shiny collection and completed hunts -->
+  <url>
+    <loc>https://www.shinyhunt.app/trophy-case</loc>
+    <lastmod>2026-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
   <!-- Signup page -->
   <url>
     <loc>https://www.shinyhunt.app/signup</loc>

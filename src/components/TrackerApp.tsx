@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, LogIn, UserPlus, Loader2, MoreVertical, BookOpen } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, LogIn, UserPlus, Loader2, MoreVertical, BookOpen, Target, Trophy } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { HuntSwitcher } from '@/components/HuntSwitcher'
@@ -32,13 +33,14 @@ import {
 import { Palette } from 'lucide-react'
 import { themes } from '@/lib/themes'
 import { storageService, initializeStorageService } from '@/lib/storageService'
-import { savePreferences } from '@/lib/preferencesStorage'
+import { loadPreferences, savePreferences } from '@/lib/preferencesStorage'
 import { Hunt, AppState, HistoryEntry } from '@/types'
 import { initializeUserProfile } from '@/lib/supabase/auth'
 import { useUserProfile } from '@/context/UserProfileContext'
 import { useAuth } from '@/context/AuthContext'
 import { First151CelebrationPopup } from '@/components/First151CelebrationPopup'
 import { SEO } from '@/components/SEO'
+import { PublicLandingView } from '@/components/PublicLandingView'
 import { logger } from '@/lib/logger'
 import { startPresenceTracking, stopPresenceTracking } from '@/lib/supabase/presence'
 import { recordProgressEvent } from '@/lib/supabase/progressEvents'
@@ -46,12 +48,15 @@ import { recordProgressEvent } from '@/lib/supabase/progressEvents'
 const isDev = import.meta.env.DEV
 
 export function TrackerApp() {
-  // Initialize with empty state - will load from Supabase when authenticated
-  const [state, setState] = useState<AppState>({
-    hunts: [],
-    currentHuntId: null,
-    darkMode: false,
-    theme: 'default',
+  // Initialize with preferences from localStorage (matches HomePage pattern for theme consistency)
+  const [state, setState] = useState<AppState>(() => {
+    const prefs = loadPreferences()
+    return {
+      hunts: [],
+      currentHuntId: null,
+      darkMode: prefs.darkMode,
+      theme: prefs.theme,
+    }
   })
   const [isLoading, setIsLoading] = useState(true)
   const { user, isAuthenticated, loadingAuth, signOut } = useAuth()
@@ -326,7 +331,9 @@ export function TrackerApp() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const [renameHuntId, setRenameHuntId] = useState<string | null>(null)
   const [deleteHuntId, setDeleteHuntId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('active')
+  const [activeTab, setActiveTab] = useState(() =>
+    location.pathname === '/trophy-case' ? 'accomplished' : 'active'
+  )
   // resetSnapshot removed - undo functionality not currently implemented
   const [showLandingPage, setShowLandingPage] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
@@ -774,30 +781,48 @@ export function TrackerApp() {
     )
   }
 
-  // Show landing page if not authenticated - redirect to home instead
-  if (!isAuthenticated) {
-    navigate('/', { replace: true })
-    return null
-  }
-
   // Remove showLandingPage overlay - navigate to / instead
   if (showLandingPage) {
     navigate('/', { replace: true })
     return null
   }
 
+  // Logged-out: render branded public landing for /tracker and /trophy-case
+  if (!isAuthenticated) {
+    return (
+      <>
+        <SEO
+          title={location.pathname === '/trophy-case' ? 'Trophy Case' : 'Shiny Hunt Tracker'}
+          description={location.pathname === '/trophy-case'
+            ? 'View your shiny Pokémon trophy case. Browse completed hunts, achievements, and your shiny collection.'
+            : 'Track your Pokémon shiny hunts with real-time progress, reset counters, and shiny odds calculations. Monitor multiple hunts, calculate probabilities, and build your shiny Pokédex.'}
+          canonicalUrl={location.pathname === '/trophy-case' ? 'https://www.shinyhunt.app/trophy-case' : 'https://www.shinyhunt.app/tracker'}
+        />
+        <PublicLandingView
+          variant={location.pathname === '/trophy-case' ? 'trophy-case' : 'tracker'}
+          darkMode={state.darkMode}
+          onToggleDarkMode={() => updateState({ darkMode: !state.darkMode })}
+        />
+      </>
+    )
+  }
+
   return (
     <>
         <SEO
-          title="Shiny Hunt Tracker — Track Your Pokémon Shiny Hunts"
-          description="Track your Pokémon shiny hunts with real-time progress, reset counters, and shiny odds calculations. Monitor multiple hunts, calculate probabilities, and build your shiny Pokédex."
-          canonicalUrl="https://www.shinyhunt.app/tracker"
+          title={location.pathname === '/trophy-case' ? 'Trophy Case' : 'Shiny Hunt Tracker'}
+          description={location.pathname === '/trophy-case'
+            ? 'View your shiny Pokémon trophy case. Browse completed hunts, achievements, and your shiny collection.'
+            : 'Track your Pokémon shiny hunts with real-time progress, reset counters, and shiny odds calculations. Monitor multiple hunts, calculate probabilities, and build your shiny Pokédex.'}
+          canonicalUrl={location.pathname === '/trophy-case' ? 'https://www.shinyhunt.app/trophy-case' : 'https://www.shinyhunt.app/tracker'}
         />
-      {/* First 151 Celebration Popup */}
-      <First151CelebrationPopup
-        open={showFirst151Popup}
-        onClose={() => setShowFirst151Popup(false)}
-      />
+      {/* First 151 Celebration Popup - only when authenticated */}
+      {isAuthenticated && (
+        <First151CelebrationPopup
+          open={showFirst151Popup}
+          onClose={() => setShowFirst151Popup(false)}
+        />
+      )}
       
       <div className="min-h-screen bg-background relative overflow-x-hidden max-w-full">
       {/* Themed background and sparkles for tracker */}
@@ -820,7 +845,7 @@ export function TrackerApp() {
                 <img 
                   src="/logo.png" 
                   alt="ShinyHunt.app - Pokémon Shiny Hunt Tracker" 
-                  className="h-[40px] md:h-[156px] w-auto object-contain transition-all duration-200"
+                  className="h-[40px] md:h-[56px] w-auto object-contain transition-all duration-200"
                 />
               </button>
               
@@ -878,9 +903,9 @@ export function TrackerApp() {
                 </>
               )}
 
-              {/* Primary Actions - Always visible on mobile and desktop */}
+              {/* Primary Actions - Show when authenticated */}
               {/* New Hunt Button - Show on active tab */}
-              {activeTab === 'active' && (
+              {isAuthenticated && activeTab === 'active' && (
                 activeHunts.length > 0 ? (
                   <Button
                     variant="default"
@@ -905,12 +930,14 @@ export function TrackerApp() {
               )}
 
               {/* Desktop: Theme Selector - Restored to original position */}
+              {isAuthenticated && (
               <div className="hidden md:block">
                 <ThemeSelector
                   currentTheme={state.theme}
                   onThemeChange={(theme) => updateState({ theme })}
                 />
               </div>
+              )}
               
               {/* Guides Button - Always visible */}
               <Button
@@ -934,8 +961,7 @@ export function TrackerApp() {
                   updateState({ darkMode: !state.darkMode })
                 }}
               />
-              
-              {/* Account Settings - Avatar - Always visible */}
+              {/* Account Settings - Avatar - Show when authenticated */}
               {isAuthenticated && (
                 <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
                   <DialogTrigger asChild>
@@ -962,6 +988,7 @@ export function TrackerApp() {
               )}
 
               {/* More Menu - Mobile only: Consolidates less important actions */}
+              {isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1007,13 +1034,78 @@ export function TrackerApp() {
                   </DropdownMenuSub>
                 </DropdownMenuContent>
               </DropdownMenu>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-[1400px] mx-auto px-2.5 sm:px-4 md:px-6 py-6 relative z-10 w-full box-border" role="main">
-        <h1 className="sr-only">Shiny Hunt Tracker - Track Your Shiny Pokémon Journey</h1>
+        {!isAuthenticated ? (
+          /* Public SEO-friendly preview for crawlers and logged-out users */
+          <div className="py-12 md:py-20">
+            <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">
+              {location.pathname === '/trophy-case'
+                ? 'Trophy Case – Your Shiny Pokémon Collection'
+                : 'Shiny Hunt Tracker – Track Your Shiny Pokémon Journey'}
+            </h1>
+            <div className="max-w-2xl mx-auto text-center space-y-6 text-muted-foreground">
+              {location.pathname === '/trophy-case' ? (
+                <>
+                  <p className="text-lg">
+                    Showcase your completed shiny hunts and build your trophy case. Track achievements, milestones, and your growing shiny collection.
+                  </p>
+                  <p className="text-sm">
+                    Sign in to view your trophy case and celebrate your shiny hunting successes.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-lg">
+                    Track your Pokémon shiny hunts with real-time progress, reset counters, and shiny odds calculations. Monitor multiple hunts, calculate probabilities, and build your shiny Pokédex.
+                  </p>
+                  <p className="text-sm">
+                    Sign in to start tracking your shiny hunts and building your collection.
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 mt-10">
+              <Button asChild size="lg" className="gap-2">
+                <Link to="/signup">
+                  <UserPlus className="h-5 w-5" />
+                  Create Account
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="gap-2">
+                <Link to="/login">
+                  <LogIn className="h-5 w-5" />
+                  Log In
+                </Link>
+              </Button>
+            </div>
+            <div className="flex justify-center gap-6 mt-10 text-sm">
+              <Link to="/tracker" className="text-primary hover:underline flex items-center gap-1">
+                <Target className="h-4 w-4" />
+                Tracker
+              </Link>
+              <Link to="/trophy-case" className="text-primary hover:underline flex items-center gap-1">
+                <Trophy className="h-4 w-4" />
+                Trophy Case
+              </Link>
+              <Link to="/guides" className="text-primary hover:underline flex items-center gap-1">
+                <BookOpen className="h-4 w-4" />
+                Guides
+              </Link>
+            </div>
+          </div>
+        ) : (
+        <>
+        <h1 className="sr-only">
+          {location.pathname === '/trophy-case'
+            ? 'Trophy Case – Your Shiny Pokémon Collection'
+            : 'Shiny Hunt Tracker – Track Your Shiny Pokémon Journey'}
+        </h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-full overflow-hidden">
           <TabsList className="mb-6 w-full max-w-full" aria-label="Hunt tracking sections">
             <TabsTrigger value="active" className="flex-1 min-w-0">Active Hunts</TabsTrigger>
@@ -1105,6 +1197,8 @@ export function TrackerApp() {
             />
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </main>
 
 
