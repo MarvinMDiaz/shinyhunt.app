@@ -238,25 +238,6 @@ export function AccomplishedView({
                 </div>
               </div>
 
-              {/* Delete button - top left, mobile-friendly */}
-              {onDeleteHunt && (
-                <div className="absolute top-3 left-3 z-20">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 min-h-[44px] min-w-[44px] text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setDeleteHuntId(hunt.id)
-                    }}
-                    aria-label={`Delete ${hunt.name}`}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                </div>
-              )}
-
               {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
@@ -398,7 +379,7 @@ export function AccomplishedView({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full sm:flex-1 hover:bg-primary/10 hover:border-primary/50 transition-colors relative z-10"
+                    className="w-full sm:flex-1 min-h-[44px] hover:bg-primary/10 hover:border-primary/50 transition-colors relative z-10"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
