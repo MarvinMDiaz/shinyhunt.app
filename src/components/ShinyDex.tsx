@@ -455,7 +455,7 @@ export function ShinyDex({ hunts }: ShinyDexProps) {
                           <span className="ml-2 font-medium">{completed.hunt.method}</span>
                         </div>
                       )}
-                      {completed.hunt.oddsP && completed.hunt.oddsP > 0 && (
+                      {(completed.hunt.oddsP ?? 0) > 0 && (
                         <div>
                           <span className="text-muted-foreground">Odds:</span>
                           <span className="ml-2 font-medium">{formatOdds(completed.hunt.oddsP)}</span>

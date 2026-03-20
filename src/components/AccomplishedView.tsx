@@ -366,7 +366,7 @@ export function AccomplishedView({
                       <p className="text-base font-semibold">{hunt.method}</p>
                     </div>
                   )}
-                  {hunt.oddsP && hunt.oddsP > 0 && (
+                  {(hunt.oddsP ?? 0) > 0 && (
                     <div className="bg-muted/50 rounded-lg p-3 border border-border/50">
                       <p className="text-muted-foreground text-xs font-medium mb-1">Odds</p>
                       <p className="text-base font-semibold">{formatOdds(hunt.oddsP)}</p>
